@@ -76,6 +76,48 @@ public final class WitnessStream extends SimplexStream {
     return landmarks;
   }
 
+  public static int[] makeMaxMinLandmarks(PointData data, int L) {
+
+    assert(L <= data.count());
+    int N = data.count();
+
+    double[] distance_array =new double[N+1]; 	
+    int[] landmarks = new int[L+1]; 
+    Random rand = new Random();
+    int first = rand.nextInt(N) + 1;
+    // landmarks[0] is always 0
+    int counter = 1;
+    landmarks[counter++] = first;
+    Arrays.fill(distance_array, HUGE);  
+    distance_array[first] = 0;
+
+    int max_id=0;
+    double max=0; 
+    
+    for(; counter < landmarks.length; ){
+      // update distance vector to set
+        assert(counter>0);
+	max=0;
+	for(int i=1;i<N;i++){
+	    double dist = data.distance(i,landmarks[counter-1]);
+	    if (dist<distance_array[i] ){
+		distance_array[i]=dist;
+	    }
+	    
+	    if(distance_array[i]>max){
+		max=distance_array[i];
+		max_id=i;
+	    }
+	    
+	}
+	landmarks[counter++] = max_id;
+	distance_array[max_id]=0;
+	//         add max_id to landmarks
+    }
+    
+    return landmarks;
+  }
+
   /**
    * Estimate Rmax for a given PointData and landmark set.
    *
@@ -521,7 +563,7 @@ public final class WitnessStream extends SimplexStream {
         for (int new_last = largest_v + 1; new_last <= L; new_last++) {
           verts[current_dimension] = new_last;
           Simplex possible = Simplex.getSimplexPresorted(verts);
-          Simplex[] bdy = possible.boundary();
+          Simplex[] bdy = possible.boundaryArray();
           int max_face_fi = 0;
           for(int fi = 0; fi < bdy.length; fi++) {
             Simplex interned_face = faces.get(bdy[fi]);
