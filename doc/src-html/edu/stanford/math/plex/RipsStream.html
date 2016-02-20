@@ -1,0 +1,599 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  RipsStream.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2007, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  $Id: RipsStream.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.21"></a>
+<FONT color="green">022</FONT>    // <a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    package edu.stanford.math.plex;<a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.*;<a name="line.26"></a>
+<FONT color="green">027</FONT>    <a name="line.27"></a>
+<FONT color="green">028</FONT>    import static edu.stanford.math.plex.WitnessStream.*;<a name="line.28"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>    /**<a name="line.30"></a>
+<FONT color="green">031</FONT>     * A &lt;code&gt;RipsStream&lt;/code&gt; instance is SimplexStream whose elements are<a name="line.31"></a>
+<FONT color="green">032</FONT>     * the simplices of the Rips complex of a PointData instance. The<a name="line.32"></a>
+<FONT color="green">033</FONT>     * implementation of this class is quite similar to that of<a name="line.33"></a>
+<FONT color="green">034</FONT>     * LazyWitnessStream.<a name="line.34"></a>
+<FONT color="green">035</FONT>     *<a name="line.35"></a>
+<FONT color="green">036</FONT>     * @see        edu.stanford.math.plex.LazyWitnessStream<a name="line.36"></a>
+<FONT color="green">037</FONT>     * @see        edu.stanford.math.plex.WitnessStream<a name="line.37"></a>
+<FONT color="green">038</FONT>     *<a name="line.38"></a>
+<FONT color="green">039</FONT>     * @version $Id: RipsStream.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.39"></a>
+<FONT color="green">040</FONT>     */<a name="line.40"></a>
+<FONT color="green">041</FONT>    public final class RipsStream extends SimplexStream {<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>      /**<a name="line.43"></a>
+<FONT color="green">044</FONT>       * The PointData underlying this Rips complex.<a name="line.44"></a>
+<FONT color="green">045</FONT>       *<a name="line.45"></a>
+<FONT color="green">046</FONT>       */<a name="line.46"></a>
+<FONT color="green">047</FONT>      public final PointData pdata;<a name="line.47"></a>
+<FONT color="green">048</FONT>    <a name="line.48"></a>
+<FONT color="green">049</FONT>      /**<a name="line.49"></a>
+<FONT color="green">050</FONT>       * The granularity used in assigning filtration indices to simplices.<a name="line.50"></a>
+<FONT color="green">051</FONT>       *<a name="line.51"></a>
+<FONT color="green">052</FONT>       * &lt;p&gt; A simplex in a Rips complex is regarded as coming into existence<a name="line.52"></a>
+<FONT color="green">053</FONT>       * when the "last" of its edges does some. Specifically, we assign a<a name="line.53"></a>
+<FONT color="green">054</FONT>       * &lt;i&gt; persistence parameter&lt;/i&gt; to each Simplex which is the the<a name="line.54"></a>
+<FONT color="green">055</FONT>       * maximum of the persistence parameters assigned to each of the<a name="line.55"></a>
+<FONT color="green">056</FONT>       * component edges. The most obvious way to do that is to use the<a name="line.56"></a>
+<FONT color="green">057</FONT>       * length of an admissible edge as the persistence parameter of that<a name="line.57"></a>
+<FONT color="green">058</FONT>       * edge. (Actually, since the persistence parameters must be integers,<a name="line.58"></a>
+<FONT color="green">059</FONT>       * the appropriate index into a sorted array of edge lengths is<a name="line.59"></a>
+<FONT color="green">060</FONT>       * used. And recall that we allow there to be a maximum length of the<a name="line.60"></a>
+<FONT color="green">061</FONT>       * edges that we consider.) Since this can result in an set of<a name="line.61"></a>
+<FONT color="green">062</FONT>       * persistence indices that grows quadratically in the number of<a name="line.62"></a>
+<FONT color="green">063</FONT>       * points, we allow the user to control this growth by specifying a<a name="line.63"></a>
+<FONT color="green">064</FONT>       * positive granularity. In this case the filtration index of an edge<a name="line.64"></a>
+<FONT color="green">065</FONT>       * is the floor of the ratio of the edge length divided by the<a name="line.65"></a>
+<FONT color="green">066</FONT>       * granularity. This means that we know that the filtration indices<a name="line.66"></a>
+<FONT color="green">067</FONT>       * will never exceed the floor of the ratio of the max edge length<a name="line.67"></a>
+<FONT color="green">068</FONT>       * divided by the granularity.<a name="line.68"></a>
+<FONT color="green">069</FONT>       *<a name="line.69"></a>
+<FONT color="green">070</FONT>       */<a name="line.70"></a>
+<FONT color="green">071</FONT>      public final double granularity;<a name="line.71"></a>
+<FONT color="green">072</FONT>    <a name="line.72"></a>
+<FONT color="green">073</FONT>      /**<a name="line.73"></a>
+<FONT color="green">074</FONT>       * The maximum dimension of a Simplex that will be admitted to the complex.<a name="line.74"></a>
+<FONT color="green">075</FONT>       */<a name="line.75"></a>
+<FONT color="green">076</FONT>      public final int maxDimension;<a name="line.76"></a>
+<FONT color="green">077</FONT>    <a name="line.77"></a>
+<FONT color="green">078</FONT>      /**<a name="line.78"></a>
+<FONT color="green">079</FONT>       * The maximum length of an edge that will be admitted to the<a name="line.79"></a>
+<FONT color="green">080</FONT>       * complex. Currently private.<a name="line.80"></a>
+<FONT color="green">081</FONT>       */<a name="line.81"></a>
+<FONT color="green">082</FONT>      public final double edge_length_limit;<a name="line.82"></a>
+<FONT color="green">083</FONT>    <a name="line.83"></a>
+<FONT color="green">084</FONT>    <a name="line.84"></a>
+<FONT color="green">085</FONT>      private double[] lengths_array;<a name="line.85"></a>
+<FONT color="green">086</FONT>      private SimplexStream.Stack stack;<a name="line.86"></a>
+<FONT color="green">087</FONT>    <a name="line.87"></a>
+<FONT color="green">088</FONT>      /**<a name="line.88"></a>
+<FONT color="green">089</FONT>       * Is there a next Simplex in the stream?<a name="line.89"></a>
+<FONT color="green">090</FONT>       *<a name="line.90"></a>
+<FONT color="green">091</FONT>       * &lt;p&gt;<a name="line.91"></a>
+<FONT color="green">092</FONT>       * @return     Return true if the stream is not yet empty.<a name="line.92"></a>
+<FONT color="green">093</FONT>       *<a name="line.93"></a>
+<FONT color="green">094</FONT>       */<a name="line.94"></a>
+<FONT color="green">095</FONT>      public boolean hasNext() {<a name="line.95"></a>
+<FONT color="green">096</FONT>        return stack.hasNext();<a name="line.96"></a>
+<FONT color="green">097</FONT>      }<a name="line.97"></a>
+<FONT color="green">098</FONT>      <a name="line.98"></a>
+<FONT color="green">099</FONT>      /**<a name="line.99"></a>
+<FONT color="green">100</FONT>       * Next Simplex in the stream.<a name="line.100"></a>
+<FONT color="green">101</FONT>       *<a name="line.101"></a>
+<FONT color="green">102</FONT>       * &lt;p&gt;<a name="line.102"></a>
+<FONT color="green">103</FONT>       * @return     Return the smallest remaining Simplex instance.<a name="line.103"></a>
+<FONT color="green">104</FONT>       *<a name="line.104"></a>
+<FONT color="green">105</FONT>       */<a name="line.105"></a>
+<FONT color="green">106</FONT>      public Simplex next() {<a name="line.106"></a>
+<FONT color="green">107</FONT>        return stack.next();<a name="line.107"></a>
+<FONT color="green">108</FONT>      }<a name="line.108"></a>
+<FONT color="green">109</FONT>    <a name="line.109"></a>
+<FONT color="green">110</FONT>      /**<a name="line.110"></a>
+<FONT color="green">111</FONT>       * Constructor for RipsStream.<a name="line.111"></a>
+<FONT color="green">112</FONT>       *<a name="line.112"></a>
+<FONT color="green">113</FONT>       * &lt;p&gt;<a name="line.113"></a>
+<FONT color="green">114</FONT>       * Make a stream of the simplices in a Rips complex for data.<a name="line.114"></a>
+<FONT color="green">115</FONT>       * &lt;p&gt;<a name="line.115"></a>
+<FONT color="green">116</FONT>       * @param      double delta Granularity to apply to the underlying metric.<a name="line.116"></a>
+<FONT color="green">117</FONT>       * @param      double max   Maximum edge we will allow.<a name="line.117"></a>
+<FONT color="green">118</FONT>       * @param      int max_d   Maximum dimension of Simplex instances we construct.<a name="line.118"></a>
+<FONT color="green">119</FONT>       * @param      PointData data   Metric data to use in constructing stream.<a name="line.119"></a>
+<FONT color="green">120</FONT>       *<a name="line.120"></a>
+<FONT color="green">121</FONT>       */<a name="line.121"></a>
+<FONT color="green">122</FONT>      RipsStream(double delta, double max, int max_d, PointData data) {<a name="line.122"></a>
+<FONT color="green">123</FONT>        assert delta &gt;= 0.0;<a name="line.123"></a>
+<FONT color="green">124</FONT>        granularity = delta;<a name="line.124"></a>
+<FONT color="green">125</FONT>        edge_length_limit = max;<a name="line.125"></a>
+<FONT color="green">126</FONT>        pdata = data;<a name="line.126"></a>
+<FONT color="green">127</FONT>        maxDimension = max_d;<a name="line.127"></a>
+<FONT color="green">128</FONT>        stack = find_simplices(max, max_d, data);<a name="line.128"></a>
+<FONT color="green">129</FONT>      }<a name="line.129"></a>
+<FONT color="green">130</FONT>    <a name="line.130"></a>
+<FONT color="green">131</FONT>      /**<a name="line.131"></a>
+<FONT color="green">132</FONT>       * How many simplices are in the stream?<a name="line.132"></a>
+<FONT color="green">133</FONT>       *<a name="line.133"></a>
+<FONT color="green">134</FONT>       * &lt;p&gt;<a name="line.134"></a>
+<FONT color="green">135</FONT>       * @return     The number of simplices in the stream.<a name="line.135"></a>
+<FONT color="green">136</FONT>       *<a name="line.136"></a>
+<FONT color="green">137</FONT>       */<a name="line.137"></a>
+<FONT color="green">138</FONT>      public final int size() {<a name="line.138"></a>
+<FONT color="green">139</FONT>        return stack.size();<a name="line.139"></a>
+<FONT color="green">140</FONT>      }<a name="line.140"></a>
+<FONT color="green">141</FONT>    <a name="line.141"></a>
+<FONT color="green">142</FONT>      /**<a name="line.142"></a>
+<FONT color="green">143</FONT>       * Max dimension of simplices in the stream.<a name="line.143"></a>
+<FONT color="green">144</FONT>       *<a name="line.144"></a>
+<FONT color="green">145</FONT>       * &lt;p&gt;<a name="line.145"></a>
+<FONT color="green">146</FONT>       * @return     Max dimension of simplices in the stream.<a name="line.146"></a>
+<FONT color="green">147</FONT>       *<a name="line.147"></a>
+<FONT color="green">148</FONT>       */<a name="line.148"></a>
+<FONT color="green">149</FONT>      public final int maxDimension() {<a name="line.149"></a>
+<FONT color="green">150</FONT>        return stack.maxDimension();<a name="line.150"></a>
+<FONT color="green">151</FONT>      }<a name="line.151"></a>
+<FONT color="green">152</FONT>    <a name="line.152"></a>
+<FONT color="green">153</FONT>      /**<a name="line.153"></a>
+<FONT color="green">154</FONT>       * Convert a filtration index into a persistence parameter (i.e., double)<a name="line.154"></a>
+<FONT color="green">155</FONT>       * -- gets overloaded by some subclasses.<a name="line.155"></a>
+<FONT color="green">156</FONT>       *<a name="line.156"></a>
+<FONT color="green">157</FONT>       * &lt;p&gt;<a name="line.157"></a>
+<FONT color="green">158</FONT>       * @param      fi Filtration index to convert.<a name="line.158"></a>
+<FONT color="green">159</FONT>       * @return     double persistence parameter.<a name="line.159"></a>
+<FONT color="green">160</FONT>       *<a name="line.160"></a>
+<FONT color="green">161</FONT>       */<a name="line.161"></a>
+<FONT color="green">162</FONT>      public double convert_filtration_index(int fi) {<a name="line.162"></a>
+<FONT color="green">163</FONT>        if (granularity &gt; 0.0) <a name="line.163"></a>
+<FONT color="green">164</FONT>          return granularity * fi;<a name="line.164"></a>
+<FONT color="green">165</FONT>        else <a name="line.165"></a>
+<FONT color="green">166</FONT>          return lengths_array[fi];<a name="line.166"></a>
+<FONT color="green">167</FONT>      }<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>    <a name="line.169"></a>
+<FONT color="green">170</FONT>      /**<a name="line.170"></a>
+<FONT color="green">171</FONT>       * Make an iterator for the stream.<a name="line.171"></a>
+<FONT color="green">172</FONT>       * &lt;p&gt;<a name="line.172"></a>
+<FONT color="green">173</FONT>       *<a name="line.173"></a>
+<FONT color="green">174</FONT>       * @return  Iterator&lt;Simplex&gt; instance for the stream.<a name="line.174"></a>
+<FONT color="green">175</FONT>       *<a name="line.175"></a>
+<FONT color="green">176</FONT>       * @see        java.util.Iterator<a name="line.176"></a>
+<FONT color="green">177</FONT>       */<a name="line.177"></a>
+<FONT color="green">178</FONT>      public Iterator&lt;Simplex&gt; iterator() {<a name="line.178"></a>
+<FONT color="green">179</FONT>        return stack.iterator();<a name="line.179"></a>
+<FONT color="green">180</FONT>      }<a name="line.180"></a>
+<FONT color="green">181</FONT>    <a name="line.181"></a>
+<FONT color="green">182</FONT>      /**<a name="line.182"></a>
+<FONT color="green">183</FONT>       * Make an iterator for the stream elements of fixed dimension.<a name="line.183"></a>
+<FONT color="green">184</FONT>       * &lt;p&gt;<a name="line.184"></a>
+<FONT color="green">185</FONT>       *<a name="line.185"></a>
+<FONT color="green">186</FONT>       * @param      d dimension of simplices of interest.<a name="line.186"></a>
+<FONT color="green">187</FONT>       * @return  Iterator&lt;Simplex&gt; instance for the stream.<a name="line.187"></a>
+<FONT color="green">188</FONT>       *<a name="line.188"></a>
+<FONT color="green">189</FONT>       * @see        java.util.Iterator<a name="line.189"></a>
+<FONT color="green">190</FONT>       */<a name="line.190"></a>
+<FONT color="green">191</FONT>      public Iterator&lt;Simplex&gt; iterator(int d) {<a name="line.191"></a>
+<FONT color="green">192</FONT>        return stack.iterator(d);<a name="line.192"></a>
+<FONT color="green">193</FONT>      }<a name="line.193"></a>
+<FONT color="green">194</FONT>    <a name="line.194"></a>
+<FONT color="green">195</FONT>      /**<a name="line.195"></a>
+<FONT color="green">196</FONT>       * Return simplices of specified dimension that compare "favorably" with<a name="line.196"></a>
+<FONT color="green">197</FONT>       * a given findex.  &lt;p&gt;<a name="line.197"></a>
+<FONT color="green">198</FONT>       *<a name="line.198"></a>
+<FONT color="green">199</FONT>       * @param      dimension dimenion of interest.<a name="line.199"></a>
+<FONT color="green">200</FONT>       * @param      test_index findex we are comparing against.<a name="line.200"></a>
+<FONT color="green">201</FONT>       * @param      ct Type of comparison to use.<a name="line.201"></a>
+<FONT color="green">202</FONT>       * @return  Simplex[] of matching simplices.<a name="line.202"></a>
+<FONT color="green">203</FONT>       */<a name="line.203"></a>
+<FONT color="green">204</FONT>      public Simplex[] matchingSimplices(int dimension, int test_index, <a name="line.204"></a>
+<FONT color="green">205</FONT>                                         ComparisonType ct) {<a name="line.205"></a>
+<FONT color="green">206</FONT>        Iterator&lt;Simplex&gt; iter = iterator(dimension);<a name="line.206"></a>
+<FONT color="green">207</FONT>        ArrayList&lt;Simplex&gt; results = new ArrayList&lt;Simplex&gt;();<a name="line.207"></a>
+<FONT color="green">208</FONT>        while(iter.hasNext()) {<a name="line.208"></a>
+<FONT color="green">209</FONT>          Simplex n = iter.next();<a name="line.209"></a>
+<FONT color="green">210</FONT>          boolean push_it = false;<a name="line.210"></a>
+<FONT color="green">211</FONT>          switch(ct) {<a name="line.211"></a>
+<FONT color="green">212</FONT>          case LT:<a name="line.212"></a>
+<FONT color="green">213</FONT>            push_it = (n.findex() &lt; test_index);<a name="line.213"></a>
+<FONT color="green">214</FONT>            break;<a name="line.214"></a>
+<FONT color="green">215</FONT>          case LE:<a name="line.215"></a>
+<FONT color="green">216</FONT>            push_it = (n.findex() &lt;= test_index);<a name="line.216"></a>
+<FONT color="green">217</FONT>            break;<a name="line.217"></a>
+<FONT color="green">218</FONT>          case EQ:<a name="line.218"></a>
+<FONT color="green">219</FONT>            push_it = (n.findex() == test_index);<a name="line.219"></a>
+<FONT color="green">220</FONT>            break;<a name="line.220"></a>
+<FONT color="green">221</FONT>          case GE:<a name="line.221"></a>
+<FONT color="green">222</FONT>            push_it = (n.findex() &gt;= test_index);<a name="line.222"></a>
+<FONT color="green">223</FONT>            break;<a name="line.223"></a>
+<FONT color="green">224</FONT>          case GT:<a name="line.224"></a>
+<FONT color="green">225</FONT>            push_it = (n.findex() &gt; test_index);<a name="line.225"></a>
+<FONT color="green">226</FONT>            break;<a name="line.226"></a>
+<FONT color="green">227</FONT>          }<a name="line.227"></a>
+<FONT color="green">228</FONT>          if (push_it)<a name="line.228"></a>
+<FONT color="green">229</FONT>            results.add(n);<a name="line.229"></a>
+<FONT color="green">230</FONT>        }<a name="line.230"></a>
+<FONT color="green">231</FONT>        // extract results, put into Simplex[]<a name="line.231"></a>
+<FONT color="green">232</FONT>        {<a name="line.232"></a>
+<FONT color="green">233</FONT>          Simplex[] return_value = <a name="line.233"></a>
+<FONT color="green">234</FONT>            new Simplex[results.size()];<a name="line.234"></a>
+<FONT color="green">235</FONT>          int counter = 0;<a name="line.235"></a>
+<FONT color="green">236</FONT>          for(Simplex s : results) <a name="line.236"></a>
+<FONT color="green">237</FONT>            return_value[counter++] = s;<a name="line.237"></a>
+<FONT color="green">238</FONT>          // I contend we don't need to sort -- Arrays.sort(return_value);<a name="line.238"></a>
+<FONT color="green">239</FONT>          return return_value;<a name="line.239"></a>
+<FONT color="green">240</FONT>        }<a name="line.240"></a>
+<FONT color="green">241</FONT>      }<a name="line.241"></a>
+<FONT color="green">242</FONT>    <a name="line.242"></a>
+<FONT color="green">243</FONT>      /**<a name="line.243"></a>
+<FONT color="green">244</FONT>       * Return simplices of specified dimension that compare "favorably" with<a name="line.244"></a>
+<FONT color="green">245</FONT>       * a given length.  &lt;p&gt;<a name="line.245"></a>
+<FONT color="green">246</FONT>       *<a name="line.246"></a>
+<FONT color="green">247</FONT>       * @param      dimension dimenion of interest.<a name="line.247"></a>
+<FONT color="green">248</FONT>       * @param      test_len length we are comparing against.<a name="line.248"></a>
+<FONT color="green">249</FONT>       * @param      ct Type of comparison to use.<a name="line.249"></a>
+<FONT color="green">250</FONT>       * @return  Simplex[] of matching simplices.<a name="line.250"></a>
+<FONT color="green">251</FONT>       */<a name="line.251"></a>
+<FONT color="green">252</FONT>      public Simplex[] matchingSimplices(int dimension, double test_len, <a name="line.252"></a>
+<FONT color="green">253</FONT>                                         ComparisonType ct) {<a name="line.253"></a>
+<FONT color="green">254</FONT>        int test_index = 0;<a name="line.254"></a>
+<FONT color="green">255</FONT>        if (lengths_array == null)<a name="line.255"></a>
+<FONT color="green">256</FONT>          // if we have no lengths_array, just make it into an findex in the<a name="line.256"></a>
+<FONT color="green">257</FONT>          // usual way<a name="line.257"></a>
+<FONT color="green">258</FONT>          test_index = (int)(Math.floor(test_len/granularity));<a name="line.258"></a>
+<FONT color="green">259</FONT>        else {<a name="line.259"></a>
+<FONT color="green">260</FONT>          // translate into findex via the lengths_array<a name="line.260"></a>
+<FONT color="green">261</FONT>          test_index = Arrays.binarySearch(lengths_array, test_len);<a name="line.261"></a>
+<FONT color="green">262</FONT>          if (test_index &lt; 0) {<a name="line.262"></a>
+<FONT color="green">263</FONT>            test_index = (-test_index) - 1;<a name="line.263"></a>
+<FONT color="green">264</FONT>            // not present -- test_index is now the insertion point for test_len,<a name="line.264"></a>
+<FONT color="green">265</FONT>            // so we have to examine the ct argument<a name="line.265"></a>
+<FONT color="green">266</FONT>            switch(ct) {<a name="line.266"></a>
+<FONT color="green">267</FONT>            case LT:<a name="line.267"></a>
+<FONT color="green">268</FONT>            case GE:<a name="line.268"></a>
+<FONT color="green">269</FONT>              break;<a name="line.269"></a>
+<FONT color="green">270</FONT>            case LE:<a name="line.270"></a>
+<FONT color="green">271</FONT>              ct = ComparisonType.LT;<a name="line.271"></a>
+<FONT color="green">272</FONT>              break;<a name="line.272"></a>
+<FONT color="green">273</FONT>            case GT:<a name="line.273"></a>
+<FONT color="green">274</FONT>              ct = ComparisonType.GE;<a name="line.274"></a>
+<FONT color="green">275</FONT>              break;<a name="line.275"></a>
+<FONT color="green">276</FONT>            case EQ:<a name="line.276"></a>
+<FONT color="green">277</FONT>              return new Simplex[0];<a name="line.277"></a>
+<FONT color="green">278</FONT>            }<a name="line.278"></a>
+<FONT color="green">279</FONT>          }<a name="line.279"></a>
+<FONT color="green">280</FONT>        }<a name="line.280"></a>
+<FONT color="green">281</FONT>        return matchingSimplices(dimension, test_index, ct);<a name="line.281"></a>
+<FONT color="green">282</FONT>      }<a name="line.282"></a>
+<FONT color="green">283</FONT>    <a name="line.283"></a>
+<FONT color="green">284</FONT>      // don't use<a name="line.284"></a>
+<FONT color="green">285</FONT>      private RipsStream() {<a name="line.285"></a>
+<FONT color="green">286</FONT>        edge_length_limit = 0.0;<a name="line.286"></a>
+<FONT color="green">287</FONT>        granularity = 0.0;<a name="line.287"></a>
+<FONT color="green">288</FONT>        maxDimension = 0;<a name="line.288"></a>
+<FONT color="green">289</FONT>        pdata = null;<a name="line.289"></a>
+<FONT color="green">290</FONT>      }<a name="line.290"></a>
+<FONT color="green">291</FONT>    <a name="line.291"></a>
+<FONT color="green">292</FONT>      //<a name="line.292"></a>
+<FONT color="green">293</FONT>      // The following package-private static members are used by<a name="line.293"></a>
+<FONT color="green">294</FONT>      // LazyWitnessStream.<a name="line.294"></a>
+<FONT color="green">295</FONT>      //<a name="line.295"></a>
+<FONT color="green">296</FONT>    <a name="line.296"></a>
+<FONT color="green">297</FONT>      // Get from (i,j) to the index of the edge_info for the edge from i-&gt;j.<a name="line.297"></a>
+<FONT color="green">298</FONT>      final static int edge_index(int i, int j, int n) {<a name="line.298"></a>
+<FONT color="green">299</FONT>        assert((i &gt; 0) &amp;&amp; (i &lt; j) &amp;&amp; (j &lt;= n));<a name="line.299"></a>
+<FONT color="green">300</FONT>        return (((n * (n - 1)) - ((n - i + 1) * (n - i))) / 2) + (j - (i + 1));<a name="line.300"></a>
+<FONT color="green">301</FONT>      }<a name="line.301"></a>
+<FONT color="green">302</FONT>    <a name="line.302"></a>
+<FONT color="green">303</FONT>      // Test function.<a name="line.303"></a>
+<FONT color="green">304</FONT>      static boolean check_edge_index(int n) {<a name="line.304"></a>
+<FONT color="green">305</FONT>        int index_limit = (n * (n-1))/2;<a name="line.305"></a>
+<FONT color="green">306</FONT>        int prev_index = -1;<a name="line.306"></a>
+<FONT color="green">307</FONT>        // System.out.printf("\n\n");<a name="line.307"></a>
+<FONT color="green">308</FONT>        for (int i = 1; i &lt;= n; i++) {<a name="line.308"></a>
+<FONT color="green">309</FONT>          for (int j = i+1; j &lt;= n; j++) {<a name="line.309"></a>
+<FONT color="green">310</FONT>            int current_index = edge_index(i, j, n);<a name="line.310"></a>
+<FONT color="green">311</FONT>            // System.out.printf(" %d = edge_index(%d, %d, %d)\n", <a name="line.311"></a>
+<FONT color="green">312</FONT>            // current_index, i, j, n);<a name="line.312"></a>
+<FONT color="green">313</FONT>            assert(current_index == (1 + prev_index));<a name="line.313"></a>
+<FONT color="green">314</FONT>            assert(current_index &lt; index_limit);<a name="line.314"></a>
+<FONT color="green">315</FONT>            assert(current_index &gt;= 0);<a name="line.315"></a>
+<FONT color="green">316</FONT>            prev_index = current_index;<a name="line.316"></a>
+<FONT color="green">317</FONT>          }<a name="line.317"></a>
+<FONT color="green">318</FONT>        }<a name="line.318"></a>
+<FONT color="green">319</FONT>        assert(index_limit == (1 + prev_index));<a name="line.319"></a>
+<FONT color="green">320</FONT>        //System.out.printf(" &gt;&gt;&gt;&gt;&gt;&gt; LIMIT = %d, last index = %d\n", <a name="line.320"></a>
+<FONT color="green">321</FONT>        // index_limit, prev_index);<a name="line.321"></a>
+<FONT color="green">322</FONT>        return true;<a name="line.322"></a>
+<FONT color="green">323</FONT>      }<a name="line.323"></a>
+<FONT color="green">324</FONT>    <a name="line.324"></a>
+<FONT color="green">325</FONT>      final static int all_edges_present(int[] verts, <a name="line.325"></a>
+<FONT color="green">326</FONT>                                         int[] edge_info, int n) {<a name="line.326"></a>
+<FONT color="green">327</FONT>        int last_vert = verts[verts.length - 1];<a name="line.327"></a>
+<FONT color="green">328</FONT>        int max_findex = 0;<a name="line.328"></a>
+<FONT color="green">329</FONT>        for (int i = 0; i &lt; verts.length - 1; i++) {<a name="line.329"></a>
+<FONT color="green">330</FONT>          int f_ij = edge_info[edge_index(verts[i], last_vert, n)];<a name="line.330"></a>
+<FONT color="green">331</FONT>          if (f_ij &lt; 0)<a name="line.331"></a>
+<FONT color="green">332</FONT>            return -1;<a name="line.332"></a>
+<FONT color="green">333</FONT>          else if (f_ij &gt; max_findex)<a name="line.333"></a>
+<FONT color="green">334</FONT>            max_findex = f_ij;<a name="line.334"></a>
+<FONT color="green">335</FONT>        }<a name="line.335"></a>
+<FONT color="green">336</FONT>        return max_findex;<a name="line.336"></a>
+<FONT color="green">337</FONT>      }<a name="line.337"></a>
+<FONT color="green">338</FONT>    <a name="line.338"></a>
+<FONT color="green">339</FONT>      //<a name="line.339"></a>
+<FONT color="green">340</FONT>      // The previous package-private static members are used by<a name="line.340"></a>
+<FONT color="green">341</FONT>      // LazyWitnessStream.<a name="line.341"></a>
+<FONT color="green">342</FONT>      //<a name="line.342"></a>
+<FONT color="green">343</FONT>    <a name="line.343"></a>
+<FONT color="green">344</FONT>      // The algorithm here is quite simple. We build a SimplexStream.stack<a name="line.344"></a>
+<FONT color="green">345</FONT>      // and push all of the Points into it. We then make a queue for storing<a name="line.345"></a>
+<FONT color="green">346</FONT>      // Simplices as they are built, and note the beginning (via something<a name="line.346"></a>
+<FONT color="green">347</FONT>      // we call a Head). We then we make the edges that are short<a name="line.347"></a>
+<FONT color="green">348</FONT>      // enough, adding those to the queue. While adding the edges, we record<a name="line.348"></a>
+<FONT color="green">349</FONT>      // the distance information in an array (which we think of as the upper<a name="line.349"></a>
+<FONT color="green">350</FONT>      // half of a distance matrix). This "matrix" stores the findex for the<a name="line.350"></a>
+<FONT color="green">351</FONT>      // edge from i-&gt;j (i &lt; j) or -1 if there is no edge. We then note the<a name="line.351"></a>
+<FONT color="green">352</FONT>      // "end of the 1-dimensional simplices" with another Head. Then,<a name="line.352"></a>
+<FONT color="green">353</FONT>      // at any point we have Head instances that mark the beginning and<a name="line.353"></a>
+<FONT color="green">354</FONT>      // end of the simplices of dimension k. We then iterate over each<a name="line.354"></a>
+<FONT color="green">355</FONT>      // Simplex s of dimension k, and for each p &gt; max(s.vertices()), we<a name="line.355"></a>
+<FONT color="green">356</FONT>      // check to see if all the edges from p to each vertex exist. If they<a name="line.356"></a>
+<FONT color="green">357</FONT>      // do, then we create a new Simplex of dimension k+1 (and if k+1 isn't<a name="line.357"></a>
+<FONT color="green">358</FONT>      // the max dimension, we enqueue the new Simplex). This procedure means<a name="line.358"></a>
+<FONT color="green">359</FONT>      // that we examine only the possible combinations of vertices in each<a name="line.359"></a>
+<FONT color="green">360</FONT>      // dimension of interest, and we only examine a combination once<a name="line.360"></a>
+<FONT color="green">361</FONT>      // (because we look at sorted lists).<a name="line.361"></a>
+<FONT color="green">362</FONT>      private final SimplexStream.Stack find_simplices(double max_dist, <a name="line.362"></a>
+<FONT color="green">363</FONT>                                                       int max_dimension, <a name="line.363"></a>
+<FONT color="green">364</FONT>                                                       PointData data) {<a name="line.364"></a>
+<FONT color="green">365</FONT>        if (max_dimension &lt; 0)<a name="line.365"></a>
+<FONT color="green">366</FONT>          return null;<a name="line.366"></a>
+<FONT color="green">367</FONT>    <a name="line.367"></a>
+<FONT color="green">368</FONT>        // Recall that "count" means that the points are indexed from 1 to N, inclusive.<a name="line.368"></a>
+<FONT color="green">369</FONT>        int N = data.count();<a name="line.369"></a>
+<FONT color="green">370</FONT>        int[] edge_info = new int[(N * (N - 1)) / 2];<a name="line.370"></a>
+<FONT color="green">371</FONT>        int max_findex;<a name="line.371"></a>
+<FONT color="green">372</FONT>        if (granularity &gt; 0.0) {<a name="line.372"></a>
+<FONT color="green">373</FONT>          max_findex = (int)(Math.floor(max_dist/granularity));<a name="line.373"></a>
+<FONT color="green">374</FONT>        } else {<a name="line.374"></a>
+<FONT color="green">375</FONT>          max_findex = ((N * (N - 1)) / 2);<a name="line.375"></a>
+<FONT color="green">376</FONT>        }<a name="line.376"></a>
+<FONT color="green">377</FONT>        // Construct the tail of the queue -- we add any simplices of less<a name="line.377"></a>
+<FONT color="green">378</FONT>        // than max dimension to this queue, so that we can go over go over<a name="line.378"></a>
+<FONT color="green">379</FONT>        // them again in a later pass<a name="line.379"></a>
+<FONT color="green">380</FONT>        SimplexStream.Tail q = new SimplexStream.Tail();<a name="line.380"></a>
+<FONT color="green">381</FONT>        // Final repository for the elements of the Rips complex.<a name="line.381"></a>
+<FONT color="green">382</FONT>        SimplexStream.Stack stack = new SimplexStream.Stack(max_findex, max_dimension);<a name="line.382"></a>
+<FONT color="green">383</FONT>    <a name="line.383"></a>
+<FONT color="green">384</FONT>        // Fill in the edge_info array with -1's, which indicate "no edge".<a name="line.384"></a>
+<FONT color="green">385</FONT>        for (int i = 0; i &lt; edge_info.length; i++)<a name="line.385"></a>
+<FONT color="green">386</FONT>          edge_info[i] = -1;<a name="line.386"></a>
+<FONT color="green">387</FONT>    <a name="line.387"></a>
+<FONT color="green">388</FONT>        // Add all of the points to the stack.<a name="line.388"></a>
+<FONT color="green">389</FONT>        for (int i = 1; i &lt;= N; i++)<a name="line.389"></a>
+<FONT color="green">390</FONT>          stack.push(Simplex.makePoint(i, 0));<a name="line.390"></a>
+<FONT color="green">391</FONT>       <a name="line.391"></a>
+<FONT color="green">392</FONT>        // If max_dimension is 0, we just want the points.<a name="line.392"></a>
+<FONT color="green">393</FONT>        if (max_dimension &lt; 1)<a name="line.393"></a>
+<FONT color="green">394</FONT>          return stack;<a name="line.394"></a>
+<FONT color="green">395</FONT>    <a name="line.395"></a>
+<FONT color="green">396</FONT>        // Remember the start of dimension k, where in this case, k=1.<a name="line.396"></a>
+<FONT color="green">397</FONT>        SimplexStream.Head last_dim_start = new SimplexStream.Head(q);<a name="line.397"></a>
+<FONT color="green">398</FONT>    <a name="line.398"></a>
+<FONT color="green">399</FONT>        // Process the edges. We both enqueue them, and create the<a name="line.399"></a>
+<FONT color="green">400</FONT>        // edge_info[] which we use to bootstrap from dimension k to<a name="line.400"></a>
+<FONT color="green">401</FONT>        // dimension k+1.<a name="line.401"></a>
+<FONT color="green">402</FONT>        if (granularity == 0.0) {<a name="line.402"></a>
+<FONT color="green">403</FONT>          double[] edge_lens = new double[(N * (N - 1)) / 2];<a name="line.403"></a>
+<FONT color="green">404</FONT>          int lengths_counter = 1;<a name="line.404"></a>
+<FONT color="green">405</FONT>    <a name="line.405"></a>
+<FONT color="green">406</FONT>          // for granularity == 0 we sort the lengths and use the index into<a name="line.406"></a>
+<FONT color="green">407</FONT>          // the sorted array of lengths as the filtration index<a name="line.407"></a>
+<FONT color="green">408</FONT>          for (int i = 1; i &lt;= N; i++) {<a name="line.408"></a>
+<FONT color="green">409</FONT>            for (int j = i+1; j &lt;= N; j++) {<a name="line.409"></a>
+<FONT color="green">410</FONT>              double dij = data.distance(i, j);<a name="line.410"></a>
+<FONT color="green">411</FONT>              if (dij &lt;= max_dist) {<a name="line.411"></a>
+<FONT color="green">412</FONT>                edge_lens[edge_index(i, j, N)] = dij;<a name="line.412"></a>
+<FONT color="green">413</FONT>                lengths_counter++;<a name="line.413"></a>
+<FONT color="green">414</FONT>              } else <a name="line.414"></a>
+<FONT color="green">415</FONT>                edge_lens[edge_index(i, j, N)] = HUGE;<a name="line.415"></a>
+<FONT color="green">416</FONT>            }<a name="line.416"></a>
+<FONT color="green">417</FONT>          }<a name="line.417"></a>
+<FONT color="green">418</FONT>    <a name="line.418"></a>
+<FONT color="green">419</FONT>          // Copy the non-HUGE lengths into the lengths_array (leaving a 0 in<a name="line.419"></a>
+<FONT color="green">420</FONT>          // the first entry), and sort it -- we will use the index of dij in<a name="line.420"></a>
+<FONT color="green">421</FONT>          // lengths_array as the persistence index for the corresponding edge<a name="line.421"></a>
+<FONT color="green">422</FONT>          // simplex. We don't bother looking for duplicate lengths, because<a name="line.422"></a>
+<FONT color="green">423</FONT>          // these will occur with probability 0 in real data.<a name="line.423"></a>
+<FONT color="green">424</FONT>          lengths_array = new double[lengths_counter];<a name="line.424"></a>
+<FONT color="green">425</FONT>          lengths_counter = 1;<a name="line.425"></a>
+<FONT color="green">426</FONT>          for (int i = 0; i &lt; edge_lens.length; i++) {<a name="line.426"></a>
+<FONT color="green">427</FONT>            if (edge_lens[i] != HUGE)<a name="line.427"></a>
+<FONT color="green">428</FONT>              lengths_array[lengths_counter++] = edge_lens[i];<a name="line.428"></a>
+<FONT color="green">429</FONT>          }<a name="line.429"></a>
+<FONT color="green">430</FONT>          Arrays.sort(lengths_array);<a name="line.430"></a>
+<FONT color="green">431</FONT>    <a name="line.431"></a>
+<FONT color="green">432</FONT>          // Use binary search to find the index to which the dij value<a name="line.432"></a>
+<FONT color="green">433</FONT>          // was moved during sorting. If the performance of this<a name="line.433"></a>
+<FONT color="green">434</FONT>          // matters, it would be possible to write a version of the sort<a name="line.434"></a>
+<FONT color="green">435</FONT>          // routine that keeps a map of the permutation performed by the<a name="line.435"></a>
+<FONT color="green">436</FONT>          // sort, but that seems unlikely to matter here.<a name="line.436"></a>
+<FONT color="green">437</FONT>          for (int i = 1; i &lt;= N; i++) {<a name="line.437"></a>
+<FONT color="green">438</FONT>            for (int j = i+1; j &lt;= N; j++) {<a name="line.438"></a>
+<FONT color="green">439</FONT>              int index = edge_index(i, j, N);<a name="line.439"></a>
+<FONT color="green">440</FONT>              double dij = edge_lens[index];<a name="line.440"></a>
+<FONT color="green">441</FONT>              if (dij &lt; HUGE) {<a name="line.441"></a>
+<FONT color="green">442</FONT>                int pindex = Arrays.binarySearch(lengths_array, dij);<a name="line.442"></a>
+<FONT color="green">443</FONT>                assert lengths_array[pindex] == dij;<a name="line.443"></a>
+<FONT color="green">444</FONT>                edge_info[index] = pindex;<a name="line.444"></a>
+<FONT color="green">445</FONT>                Simplex s = Simplex.makeEdge(i, j, pindex);<a name="line.445"></a>
+<FONT color="green">446</FONT>                stack.push(s);<a name="line.446"></a>
+<FONT color="green">447</FONT>                q = q.enqueue(s);<a name="line.447"></a>
+<FONT color="green">448</FONT>              }<a name="line.448"></a>
+<FONT color="green">449</FONT>            }<a name="line.449"></a>
+<FONT color="green">450</FONT>          }<a name="line.450"></a>
+<FONT color="green">451</FONT>        } else {<a name="line.451"></a>
+<FONT color="green">452</FONT>          for (int i = 1; i &lt;= N; i++) {<a name="line.452"></a>
+<FONT color="green">453</FONT>            for (int j = i+1; j &lt;= N; j++) {<a name="line.453"></a>
+<FONT color="green">454</FONT>              double dij = data.distance(i, j);<a name="line.454"></a>
+<FONT color="green">455</FONT>              if (dij &lt;= max_dist) {<a name="line.455"></a>
+<FONT color="green">456</FONT>                int f_ij = (int)(Math.floor(dij/granularity));<a name="line.456"></a>
+<FONT color="green">457</FONT>                edge_info[edge_index(i, j, N)] = f_ij;<a name="line.457"></a>
+<FONT color="green">458</FONT>                Simplex s = Simplex.makeEdge(i, j, f_ij);<a name="line.458"></a>
+<FONT color="green">459</FONT>                stack.push(s);<a name="line.459"></a>
+<FONT color="green">460</FONT>                q = q.enqueue(s);<a name="line.460"></a>
+<FONT color="green">461</FONT>              }<a name="line.461"></a>
+<FONT color="green">462</FONT>            }<a name="line.462"></a>
+<FONT color="green">463</FONT>          }<a name="line.463"></a>
+<FONT color="green">464</FONT>        }<a name="line.464"></a>
+<FONT color="green">465</FONT>    <a name="line.465"></a>
+<FONT color="green">466</FONT>        // We are ready to construct the higher dimensional data. Since we<a name="line.466"></a>
+<FONT color="green">467</FONT>        // already have the edges, we begin with 2-dimensional simplexes,<a name="line.467"></a>
+<FONT color="green">468</FONT>        // and continue until we have constructed those of max_dimension.<a name="line.468"></a>
+<FONT color="green">469</FONT>        int current_dimension = 2;<a name="line.469"></a>
+<FONT color="green">470</FONT>        while (current_dimension &lt;= max_dimension) {<a name="line.470"></a>
+<FONT color="green">471</FONT>          // we start processing at last_dim_start<a name="line.471"></a>
+<FONT color="green">472</FONT>          SimplexStream.Head current = last_dim_start;<a name="line.472"></a>
+<FONT color="green">473</FONT>          // At this point all simplices of current_dimension-1 have been<a name="line.473"></a>
+<FONT color="green">474</FONT>          // added to the queue (and none of current_dimension), so we<a name="line.474"></a>
+<FONT color="green">475</FONT>          // stop processing for this dimension when current reaches end.<a name="line.475"></a>
+<FONT color="green">476</FONT>          SimplexStream.Head end = new SimplexStream.Head(q);<a name="line.476"></a>
+<FONT color="green">477</FONT>          // Remember end as last_dim_start, for the next iteration<a name="line.477"></a>
+<FONT color="green">478</FONT>          last_dim_start = end;<a name="line.478"></a>
+<FONT color="green">479</FONT>          // We construct a scratch array in which to store any potential<a name="line.479"></a>
+<FONT color="green">480</FONT>          // vertex sets for possible simplices of dimension<a name="line.480"></a>
+<FONT color="green">481</FONT>          // current_dimension.<a name="line.481"></a>
+<FONT color="green">482</FONT>          int[] verts = new int[current_dimension + 1];<a name="line.482"></a>
+<FONT color="green">483</FONT>    <a name="line.483"></a>
+<FONT color="green">484</FONT>          while (current.lessThan(end)) {<a name="line.484"></a>
+<FONT color="green">485</FONT>            // Until current reaches end, extract simplices and copy<a name="line.485"></a>
+<FONT color="green">486</FONT>            // their vertices into the scratch array.<a name="line.486"></a>
+<FONT color="green">487</FONT>            Simplex face = current.nextEntry();<a name="line.487"></a>
+<FONT color="green">488</FONT>            assert(face.dimension() == (current_dimension-1));<a name="line.488"></a>
+<FONT color="green">489</FONT>            face.vertices(verts);<a name="line.489"></a>
+<FONT color="green">490</FONT>            // We know that any k dimensional simplex that we can admit<a name="line.490"></a>
+<FONT color="green">491</FONT>            // must have all of its faces in the list of k-1 simplices<a name="line.491"></a>
+<FONT color="green">492</FONT>            // (a simplex cannot belong to a complex unless all of its<a name="line.492"></a>
+<FONT color="green">493</FONT>            // faces belong, too). That means that any possible k<a name="line.493"></a>
+<FONT color="green">494</FONT>            // simplex [x1,...,x(k+1)] must have the face [x1,...,xk]<a name="line.494"></a>
+<FONT color="green">495</FONT>            // in the list. So we see that we can get to any possible k<a name="line.495"></a>
+<FONT color="green">496</FONT>            // simplex by adding a vertex "onto the end" (that is, the<a name="line.496"></a>
+<FONT color="green">497</FONT>            // new vertex is larger than any of the existing ones) of a<a name="line.497"></a>
+<FONT color="green">498</FONT>            // k-1 simplex. Further, it is easy to see that adding onto<a name="line.498"></a>
+<FONT color="green">499</FONT>            // the end of 2 distinct k-1 simplices can never yield the<a name="line.499"></a>
+<FONT color="green">500</FONT>            // same k simplex. So if we just add onto the end of the<a name="line.500"></a>
+<FONT color="green">501</FONT>            // simplices in the previous dimension, we will see all<a name="line.501"></a>
+<FONT color="green">502</FONT>            // potential k simplices precisely once. So if verts is<a name="line.502"></a>
+<FONT color="green">503</FONT>            // [v1,...,vk, &lt;junk&gt;], then we are interested in any<a name="line.503"></a>
+<FONT color="green">504</FONT>            // possible simplex [v1,...,vk,x] with x &gt; vk. In this case<a name="line.504"></a>
+<FONT color="green">505</FONT>            // we merely need to check if (v1, x),...,(v1, k) are<a name="line.505"></a>
+<FONT color="green">506</FONT>            // edges. If so, [v1,...,vk,x] is a simplex, and its<a name="line.506"></a>
+<FONT color="green">507</FONT>            // "diameter" is the max of diam([v1,...,vk]) and the<a name="line.507"></a>
+<FONT color="green">508</FONT>            // lengths of the edges (v1,x),...(vk,x).<a name="line.508"></a>
+<FONT color="green">509</FONT>            int largest_v = verts[current_dimension-1];<a name="line.509"></a>
+<FONT color="green">510</FONT>            for (int new_last = largest_v + 1; new_last &lt;= N; new_last++) {<a name="line.510"></a>
+<FONT color="green">511</FONT>              verts[current_dimension] = new_last;<a name="line.511"></a>
+<FONT color="green">512</FONT>              int f_new = all_edges_present(verts, edge_info, N);<a name="line.512"></a>
+<FONT color="green">513</FONT>              if (f_new &gt;= 0) {<a name="line.513"></a>
+<FONT color="green">514</FONT>                Simplex newSimplex = <a name="line.514"></a>
+<FONT color="green">515</FONT>                  Simplex.getSimplex(verts, Math.max(face.findex(), f_new));<a name="line.515"></a>
+<FONT color="green">516</FONT>                stack.push(newSimplex);<a name="line.516"></a>
+<FONT color="green">517</FONT>                if (current_dimension &lt; max_dimension)<a name="line.517"></a>
+<FONT color="green">518</FONT>                  // if the dimension of newSimplex isn't maximal,<a name="line.518"></a>
+<FONT color="green">519</FONT>                  // then we put it in the queue<a name="line.519"></a>
+<FONT color="green">520</FONT>                  q = q.enqueue(newSimplex);<a name="line.520"></a>
+<FONT color="green">521</FONT>              }<a name="line.521"></a>
+<FONT color="green">522</FONT>            }<a name="line.522"></a>
+<FONT color="green">523</FONT>          }<a name="line.523"></a>
+<FONT color="green">524</FONT>          // Make sure that if we are exiting we have processed all<a name="line.524"></a>
+<FONT color="green">525</FONT>          // simplices in q.<a name="line.525"></a>
+<FONT color="green">526</FONT>          assert((current_dimension &lt; max_dimension) || <a name="line.526"></a>
+<FONT color="green">527</FONT>                 (last_dim_start.eql(new SimplexStream.Head(q))));<a name="line.527"></a>
+<FONT color="green">528</FONT>          current_dimension++;<a name="line.528"></a>
+<FONT color="green">529</FONT>        }<a name="line.529"></a>
+<FONT color="green">530</FONT>       <a name="line.530"></a>
+<FONT color="green">531</FONT>        return stack;<a name="line.531"></a>
+<FONT color="green">532</FONT>      }<a name="line.532"></a>
+<FONT color="green">533</FONT>    }<a name="line.533"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

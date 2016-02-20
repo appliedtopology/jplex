@@ -1,0 +1,121 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  Plex.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2008, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  Plex.java<a name="line.21"></a>
+<FONT color="green">022</FONT>    // <a name="line.22"></a>
+<FONT color="green">023</FONT>    //  $Id: Plex.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.23"></a>
+<FONT color="green">024</FONT>    // <a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.awt.*;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.awt.event.*;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.io.*;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.util.Vector;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import bsh.util.*;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import bsh.*;<a name="line.31"></a>
+<FONT color="green">032</FONT>    <a name="line.32"></a>
+<FONT color="green">033</FONT>    /**<a name="line.33"></a>
+<FONT color="green">034</FONT>     * The &lt;code&gt;Plex&lt;/code&gt; class is the entry point for Plex users into Beanshell.<a name="line.34"></a>
+<FONT color="green">035</FONT>     * This file is a trivial modification of the analogous code in Beanshell.<a name="line.35"></a>
+<FONT color="green">036</FONT>     *<a name="line.36"></a>
+<FONT color="green">037</FONT>     * @version $Id: Plex.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.37"></a>
+<FONT color="green">038</FONT>     */<a name="line.38"></a>
+<FONT color="green">039</FONT>    public class Plex {<a name="line.39"></a>
+<FONT color="green">040</FONT>            public static void main( String args[] ) {<a name="line.40"></a>
+<FONT color="green">041</FONT>                    if (!Capabilities.classExists( "bsh.util.Util" ))<a name="line.41"></a>
+<FONT color="green">042</FONT>                            System.out.println("Can't find the BeanShell utilities.");<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>                    if (Capabilities.haveSwing()) {<a name="line.44"></a>
+<FONT color="green">045</FONT>                            try {<a name="line.45"></a>
+<FONT color="green">046</FONT>                                    new Interpreter().eval("desktop()");<a name="line.46"></a>
+<FONT color="green">047</FONT>                            } catch ( EvalError e ) {<a name="line.47"></a>
+<FONT color="green">048</FONT>                                    System.err.println("Couldn't start desktop: "+e);<a name="line.48"></a>
+<FONT color="green">049</FONT>                            }<a name="line.49"></a>
+<FONT color="green">050</FONT>                    } else {<a name="line.50"></a>
+<FONT color="green">051</FONT>                            System.err.println("Can't find required javax.swing package");<a name="line.51"></a>
+<FONT color="green">052</FONT>                    }<a name="line.52"></a>
+<FONT color="green">053</FONT>            }<a name="line.53"></a>
+<FONT color="green">054</FONT>    }<a name="line.54"></a>
+<FONT color="green">055</FONT>    <a name="line.55"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,146 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  DistanceData.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2007, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  $Id: DistanceData.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.21"></a>
+<FONT color="green">022</FONT>    // <a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    package edu.stanford.math.plex;<a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.*;<a name="line.26"></a>
+<FONT color="green">027</FONT>    <a name="line.27"></a>
+<FONT color="green">028</FONT>    /**<a name="line.28"></a>
+<FONT color="green">029</FONT>     * The &lt;code&gt;DistanceData&lt;/code&gt; class is the simplest implementation<a name="line.29"></a>
+<FONT color="green">030</FONT>     * of NSpace. Intended for smallish data sets.<a name="line.30"></a>
+<FONT color="green">031</FONT>     *<a name="line.31"></a>
+<FONT color="green">032</FONT>     * @version $Id: DistanceData.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.32"></a>
+<FONT color="green">033</FONT>     */<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>    public final class DistanceData extends PointData {<a name="line.35"></a>
+<FONT color="green">036</FONT>    <a name="line.36"></a>
+<FONT color="green">037</FONT>      final double[][] d;<a name="line.37"></a>
+<FONT color="green">038</FONT>      final int numPoints;<a name="line.38"></a>
+<FONT color="green">039</FONT>    <a name="line.39"></a>
+<FONT color="green">040</FONT>      /**<a name="line.40"></a>
+<FONT color="green">041</FONT>       * The number of data points.<a name="line.41"></a>
+<FONT color="green">042</FONT>       *<a name="line.42"></a>
+<FONT color="green">043</FONT>       * &lt;p&gt;<a name="line.43"></a>
+<FONT color="green">044</FONT>       *<a name="line.44"></a>
+<FONT color="green">045</FONT>       * @return     the number of points<a name="line.45"></a>
+<FONT color="green">046</FONT>       */<a name="line.46"></a>
+<FONT color="green">047</FONT>      public final int count() {<a name="line.47"></a>
+<FONT color="green">048</FONT>        if (d != null)<a name="line.48"></a>
+<FONT color="green">049</FONT>          return (d.length);<a name="line.49"></a>
+<FONT color="green">050</FONT>        else<a name="line.50"></a>
+<FONT color="green">051</FONT>          return 0;<a name="line.51"></a>
+<FONT color="green">052</FONT>      }<a name="line.52"></a>
+<FONT color="green">053</FONT>       <a name="line.53"></a>
+<FONT color="green">054</FONT>      /**<a name="line.54"></a>
+<FONT color="green">055</FONT>       * Euclidean distance.<a name="line.55"></a>
+<FONT color="green">056</FONT>       *<a name="line.56"></a>
+<FONT color="green">057</FONT>       * &lt;p&gt;<a name="line.57"></a>
+<FONT color="green">058</FONT>       *<a name="line.58"></a>
+<FONT color="green">059</FONT>       * @param      p1   the first point<a name="line.59"></a>
+<FONT color="green">060</FONT>       * @param      p2   the second point<a name="line.60"></a>
+<FONT color="green">061</FONT>       * @return     the distance between p1 and p2.<a name="line.61"></a>
+<FONT color="green">062</FONT>       */<a name="line.62"></a>
+<FONT color="green">063</FONT>      public final double distance (int p1, int p2) {<a name="line.63"></a>
+<FONT color="green">064</FONT>        if (p1 == p2)<a name="line.64"></a>
+<FONT color="green">065</FONT>          return 0.0;<a name="line.65"></a>
+<FONT color="green">066</FONT>        else {<a name="line.66"></a>
+<FONT color="green">067</FONT>          return d[p1-1][p2-1];<a name="line.67"></a>
+<FONT color="green">068</FONT>        }<a name="line.68"></a>
+<FONT color="green">069</FONT>    <a name="line.69"></a>
+<FONT color="green">070</FONT>      }<a name="line.70"></a>
+<FONT color="green">071</FONT>    <a name="line.71"></a>
+<FONT color="green">072</FONT>      // Constructor for this class.<a name="line.72"></a>
+<FONT color="green">073</FONT>      public DistanceData(double[][] data) {<a name="line.73"></a>
+<FONT color="green">074</FONT>        super();<a name="line.74"></a>
+<FONT color="green">075</FONT>        d = data;<a name="line.75"></a>
+<FONT color="green">076</FONT>        numPoints = d.length;<a name="line.76"></a>
+<FONT color="green">077</FONT>      }<a name="line.77"></a>
+<FONT color="green">078</FONT>    <a name="line.78"></a>
+<FONT color="green">079</FONT>    <a name="line.79"></a>
+<FONT color="green">080</FONT>    }<a name="line.80"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

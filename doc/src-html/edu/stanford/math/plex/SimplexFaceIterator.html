@@ -1,0 +1,265 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  SimplexFaceIterator.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2007, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  Used to iterate over faces of a Simplex instance, or an array of<a name="line.21"></a>
+<FONT color="green">022</FONT>    //  vertices that describe a simplex.<a name="line.22"></a>
+<FONT color="green">023</FONT>    // <a name="line.23"></a>
+<FONT color="green">024</FONT>    //  $Id: SimplexFaceIterator.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.24"></a>
+<FONT color="green">025</FONT>    // <a name="line.25"></a>
+<FONT color="green">026</FONT>    <a name="line.26"></a>
+<FONT color="green">027</FONT>    package edu.stanford.math.plex;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.*;<a name="line.28"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>    /**<a name="line.30"></a>
+<FONT color="green">031</FONT>     * The &lt;code&gt;SimplexFaceIterator&lt;/code&gt; class.<a name="line.31"></a>
+<FONT color="green">032</FONT>     *<a name="line.32"></a>
+<FONT color="green">033</FONT>     * &lt;p&gt;A &lt;code&gt;SimplexFaceIterator&lt;/code&gt; instance makes an iterator that<a name="line.33"></a>
+<FONT color="green">034</FONT>     * returns all of the faces of a Simplex (specified via a Simplex or a<a name="line.34"></a>
+<FONT color="green">035</FONT>     * SimplexHandle) in a given dimension range. It also keeps track of the<a name="line.35"></a>
+<FONT color="green">036</FONT>     * sign of the last one returned, so that this can be used to compute the<a name="line.36"></a>
+<FONT color="green">037</FONT>     * boundary of a simplex. <a name="line.37"></a>
+<FONT color="green">038</FONT>     *<a name="line.38"></a>
+<FONT color="green">039</FONT>     * @version $Id: SimplexFaceIterator.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.39"></a>
+<FONT color="green">040</FONT>     */<a name="line.40"></a>
+<FONT color="green">041</FONT>    public final class SimplexFaceIterator {<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>      private int signOfLast;<a name="line.43"></a>
+<FONT color="green">044</FONT>      // The number of elements in the counter and current arrays -- the size<a name="line.44"></a>
+<FONT color="green">045</FONT>      // of the subsets that we are iterating over.<a name="line.45"></a>
+<FONT color="green">046</FONT>      private final int k;<a name="line.46"></a>
+<FONT color="green">047</FONT>      // The number of elements in the vertices set -- the size of the<a name="line.47"></a>
+<FONT color="green">048</FONT>      // superset whose k-sets we are iterating over.<a name="line.48"></a>
+<FONT color="green">049</FONT>      private final int N;<a name="line.49"></a>
+<FONT color="green">050</FONT>      // The actual vertex set that we are iterating over.<a name="line.50"></a>
+<FONT color="green">051</FONT>      private final int[] vertices;<a name="line.51"></a>
+<FONT color="green">052</FONT>      // The k-length array of indices (that is , 0,...,N-1).<a name="line.52"></a>
+<FONT color="green">053</FONT>      private final int[] counter;<a name="line.53"></a>
+<FONT color="green">054</FONT>      // The current "vertex subset".<a name="line.54"></a>
+<FONT color="green">055</FONT>      private final int[] current;<a name="line.55"></a>
+<FONT color="green">056</FONT>    <a name="line.56"></a>
+<FONT color="green">057</FONT>    <a name="line.57"></a>
+<FONT color="green">058</FONT>      // Are there any more elements?<a name="line.58"></a>
+<FONT color="green">059</FONT>      public boolean hasNext() {<a name="line.59"></a>
+<FONT color="green">060</FONT>        return ((counter[k-1] &lt; (N - 1)) || (counter[0] &lt; (N - k)));<a name="line.60"></a>
+<FONT color="green">061</FONT>      }<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>      // This is a little tricky. We want a way to iterate over all of the<a name="line.63"></a>
+<FONT color="green">064</FONT>      // subsets of the vertex set, and return simplices for each of those<a name="line.64"></a>
+<FONT color="green">065</FONT>      // subsets. (These subsets are the lower dimensional faces of the<a name="line.65"></a>
+<FONT color="green">066</FONT>      // simplex.) If we consider the set with N elements to be {0,...,N-1},<a name="line.66"></a>
+<FONT color="green">067</FONT>      // then the k subsets of N are given by all possible {x0&lt;...&lt;x(k-1)}, so we<a name="line.67"></a>
+<FONT color="green">068</FONT>      // can enumerate this with a k vector where we iterate over all<a name="line.68"></a>
+<FONT color="green">069</FONT>      // possible such arrangements of values. It doesn't particularly matter<a name="line.69"></a>
+<FONT color="green">070</FONT>      // what order we use, so we generate the sets lexicographically since<a name="line.70"></a>
+<FONT color="green">071</FONT>      // this seems simplest to understand. Clearly the first subset in this<a name="line.71"></a>
+<FONT color="green">072</FONT>      // ordering will be [0,...,(k-1)], and for any subset S = [x0,....x(k-1)] where<a name="line.72"></a>
+<FONT color="green">073</FONT>      // x(k-1)&lt;N, the next subset is [x0,...,x(k-1)+1]. In fact, for any S =<a name="line.73"></a>
+<FONT color="green">074</FONT>      // [x0,...,xj,..,x(k-1)], the next subset is [x0,...,x(j-1)] adjoined to<a name="line.74"></a>
+<FONT color="green">075</FONT>      // the next subset for [xj,...,x(k-1)]. Notice that we can consider<a name="line.75"></a>
+<FONT color="green">076</FONT>      // [xj,...,x(k-1)] just as a subset of {xj,...,N} (the xi are increasing).<a name="line.76"></a>
+<FONT color="green">077</FONT>      // Since the last entry in {xj,...,N} will be [(N-j)+1,...,N-1,N], all<a name="line.77"></a>
+<FONT color="green">078</FONT>      // we need to do to find the next entry after S is to find a j so that<a name="line.78"></a>
+<FONT color="green">079</FONT>      // [xj,...,x(k-1)] is not of that form. That is, we find the last subscript<a name="line.79"></a>
+<FONT color="green">080</FONT>      // j such that xj &lt; N-(k-j). If there is no such index, then S =<a name="line.80"></a>
+<FONT color="green">081</FONT>      // [N-k,...,N-1] -- in other words, S is the last subset. If there is<a name="line.81"></a>
+<FONT color="green">082</FONT>      // such a j, then the next subset is [1+xj,2+xj,...] adjoined to<a name="line.82"></a>
+<FONT color="green">083</FONT>      // [x0,...,x(j-1)]. Therefore, if are any subsets, that is, if N&gt;k&gt;0,<a name="line.83"></a>
+<FONT color="green">084</FONT>      // we set an array we use as a "counter" to the initial value of<a name="line.84"></a>
+<FONT color="green">085</FONT>      // [0,...,k-2,k-2] (that is, the last entry is one less than it should<a name="line.85"></a>
+<FONT color="green">086</FONT>      // be), that when we ask for the first time for the "next" set, we get<a name="line.86"></a>
+<FONT color="green">087</FONT>      // the first set. <a name="line.87"></a>
+<FONT color="green">088</FONT>      //<a name="line.88"></a>
+<FONT color="green">089</FONT>      // In practice our vertex sets are given as an array of indices<a name="line.89"></a>
+<FONT color="green">090</FONT>      // V[]=[v0,v1,...,v(N-1)], so the k-subsets are actually enumerated by<a name="line.90"></a>
+<FONT color="green">091</FONT>      // enumerating the indices -- that is we enumerate [x0,...,x(k-1)] in the<a name="line.91"></a>
+<FONT color="green">092</FONT>      // set [0,...N-1], and then the sets {V[x0],...,V[x(k-1)]} iterate over<a name="line.92"></a>
+<FONT color="green">093</FONT>      // all k-sets of V. This is the reason that the code here is using<a name="line.93"></a>
+<FONT color="green">094</FONT>      // 0-based counting.<a name="line.94"></a>
+<FONT color="green">095</FONT>    <a name="line.95"></a>
+<FONT color="green">096</FONT>      /**<a name="line.96"></a>
+<FONT color="green">097</FONT>       * Get the next face in an iteration of all faces of dimension k.<a name="line.97"></a>
+<FONT color="green">098</FONT>       *<a name="line.98"></a>
+<FONT color="green">099</FONT>       * &lt;p&gt;<a name="line.99"></a>
+<FONT color="green">100</FONT>       *<a name="line.100"></a>
+<FONT color="green">101</FONT>       * @return     vertices for the next k-face.<a name="line.101"></a>
+<FONT color="green">102</FONT>       *<a name="line.102"></a>
+<FONT color="green">103</FONT>       */<a name="line.103"></a>
+<FONT color="green">104</FONT>      public final int[] next () {<a name="line.104"></a>
+<FONT color="green">105</FONT>        int i;<a name="line.105"></a>
+<FONT color="green">106</FONT>        if (counter[k-1] &lt; (N-1))<a name="line.106"></a>
+<FONT color="green">107</FONT>          counter[k-1]++;<a name="line.107"></a>
+<FONT color="green">108</FONT>        else {<a name="line.108"></a>
+<FONT color="green">109</FONT>          for (i = k-2; i &gt;= 0; i--) {<a name="line.109"></a>
+<FONT color="green">110</FONT>            if (counter[i] &lt; ((N-k)+i)) {<a name="line.110"></a>
+<FONT color="green">111</FONT>              int base = counter[i] + 1;<a name="line.111"></a>
+<FONT color="green">112</FONT>              for (int j = i; j &lt; k; j++)<a name="line.112"></a>
+<FONT color="green">113</FONT>                counter[j] = base++;<a name="line.113"></a>
+<FONT color="green">114</FONT>              break;<a name="line.114"></a>
+<FONT color="green">115</FONT>            }<a name="line.115"></a>
+<FONT color="green">116</FONT>          }<a name="line.116"></a>
+<FONT color="green">117</FONT>        }<a name="line.117"></a>
+<FONT color="green">118</FONT>        for (i = 0; i &lt; k; i++)<a name="line.118"></a>
+<FONT color="green">119</FONT>          current[i] = vertices[counter[i]];<a name="line.119"></a>
+<FONT color="green">120</FONT>        signOfLast = -signOfLast;<a name="line.120"></a>
+<FONT color="green">121</FONT>        return current;<a name="line.121"></a>
+<FONT color="green">122</FONT>      }<a name="line.122"></a>
+<FONT color="green">123</FONT>    <a name="line.123"></a>
+<FONT color="green">124</FONT>    <a name="line.124"></a>
+<FONT color="green">125</FONT>      private SimplexFaceIterator() {<a name="line.125"></a>
+<FONT color="green">126</FONT>        // do not use<a name="line.126"></a>
+<FONT color="green">127</FONT>        k = 0;<a name="line.127"></a>
+<FONT color="green">128</FONT>        N = 0;<a name="line.128"></a>
+<FONT color="green">129</FONT>        counter = null;<a name="line.129"></a>
+<FONT color="green">130</FONT>        current = null;<a name="line.130"></a>
+<FONT color="green">131</FONT>        vertices = null;<a name="line.131"></a>
+<FONT color="green">132</FONT>        signOfLast = 0;<a name="line.132"></a>
+<FONT color="green">133</FONT>      }<a name="line.133"></a>
+<FONT color="green">134</FONT>    <a name="line.134"></a>
+<FONT color="green">135</FONT>    <a name="line.135"></a>
+<FONT color="green">136</FONT>      /**<a name="line.136"></a>
+<FONT color="green">137</FONT>       * Construct a new iterator for faces of a simplex given by an array.<a name="line.137"></a>
+<FONT color="green">138</FONT>       *<a name="line.138"></a>
+<FONT color="green">139</FONT>       * &lt;p&gt;<a name="line.139"></a>
+<FONT color="green">140</FONT>       *<a name="line.140"></a>
+<FONT color="green">141</FONT>       * @param      vertices   An int[] specifying the vertices.<a name="line.141"></a>
+<FONT color="green">142</FONT>       * @param dimension Dimension of the faces we care about.<a name="line.142"></a>
+<FONT color="green">143</FONT>       *<a name="line.143"></a>
+<FONT color="green">144</FONT>       */<a name="line.144"></a>
+<FONT color="green">145</FONT>      public SimplexFaceIterator(int[] vertices, int dimension) {<a name="line.145"></a>
+<FONT color="green">146</FONT>        if ((dimension &gt;= 0) &amp;&amp; (vertices.length &gt; dimension)) {<a name="line.146"></a>
+<FONT color="green">147</FONT>          k = dimension + 1;<a name="line.147"></a>
+<FONT color="green">148</FONT>          N = vertices.length;<a name="line.148"></a>
+<FONT color="green">149</FONT>    <a name="line.149"></a>
+<FONT color="green">150</FONT>          if ((k+1) == N)<a name="line.150"></a>
+<FONT color="green">151</FONT>            signOfLast = -1;<a name="line.151"></a>
+<FONT color="green">152</FONT>          else<a name="line.152"></a>
+<FONT color="green">153</FONT>            signOfLast = 0;<a name="line.153"></a>
+<FONT color="green">154</FONT>    <a name="line.154"></a>
+<FONT color="green">155</FONT>          this.vertices = vertices;<a name="line.155"></a>
+<FONT color="green">156</FONT>          counter = new int[k];<a name="line.156"></a>
+<FONT color="green">157</FONT>          for (int i = 0; i &lt; k-1; i++)<a name="line.157"></a>
+<FONT color="green">158</FONT>            counter[i] = i;<a name="line.158"></a>
+<FONT color="green">159</FONT>          counter[k-1] = k-2;<a name="line.159"></a>
+<FONT color="green">160</FONT>          current = new int[k];<a name="line.160"></a>
+<FONT color="green">161</FONT>        } else {<a name="line.161"></a>
+<FONT color="green">162</FONT>          k = 1;<a name="line.162"></a>
+<FONT color="green">163</FONT>          N = 1;<a name="line.163"></a>
+<FONT color="green">164</FONT>          counter = new int[1];<a name="line.164"></a>
+<FONT color="green">165</FONT>          current = new int[1];<a name="line.165"></a>
+<FONT color="green">166</FONT>          this.vertices = null;<a name="line.166"></a>
+<FONT color="green">167</FONT>          signOfLast = 0;<a name="line.167"></a>
+<FONT color="green">168</FONT>        }<a name="line.168"></a>
+<FONT color="green">169</FONT>      }<a name="line.169"></a>
+<FONT color="green">170</FONT>    <a name="line.170"></a>
+<FONT color="green">171</FONT>    <a name="line.171"></a>
+<FONT color="green">172</FONT>      /**<a name="line.172"></a>
+<FONT color="green">173</FONT>       * Construct a new iterator for the faces specified dimension.<a name="line.173"></a>
+<FONT color="green">174</FONT>       *<a name="line.174"></a>
+<FONT color="green">175</FONT>       * &lt;p&gt;<a name="line.175"></a>
+<FONT color="green">176</FONT>       *<a name="line.176"></a>
+<FONT color="green">177</FONT>       * @param      s   Simplex whose faces are of interest.<a name="line.177"></a>
+<FONT color="green">178</FONT>       * @param dimension Dimension of the faces we care about (often<a name="line.178"></a>
+<FONT color="green">179</FONT>       *        dimension of the simplex - 1).<a name="line.179"></a>
+<FONT color="green">180</FONT>       *<a name="line.180"></a>
+<FONT color="green">181</FONT>       */<a name="line.181"></a>
+<FONT color="green">182</FONT>      public SimplexFaceIterator(Simplex s, int dimension) {<a name="line.182"></a>
+<FONT color="green">183</FONT>        this(s.vertices(), dimension);<a name="line.183"></a>
+<FONT color="green">184</FONT>      }<a name="line.184"></a>
+<FONT color="green">185</FONT>    <a name="line.185"></a>
+<FONT color="green">186</FONT>      /**<a name="line.186"></a>
+<FONT color="green">187</FONT>       * Return the dimension of the faces generated by this iterator.<a name="line.187"></a>
+<FONT color="green">188</FONT>       */    <a name="line.188"></a>
+<FONT color="green">189</FONT>      public int getDimension() {<a name="line.189"></a>
+<FONT color="green">190</FONT>        return k - 1;<a name="line.190"></a>
+<FONT color="green">191</FONT>      }<a name="line.191"></a>
+<FONT color="green">192</FONT>    <a name="line.192"></a>
+<FONT color="green">193</FONT>      /**<a name="line.193"></a>
+<FONT color="green">194</FONT>       * Return the sign of the last face -- only useful when codimension is 1.<a name="line.194"></a>
+<FONT color="green">195</FONT>       */    <a name="line.195"></a>
+<FONT color="green">196</FONT>      public int getSignOfLast() {<a name="line.196"></a>
+<FONT color="green">197</FONT>        return signOfLast;<a name="line.197"></a>
+<FONT color="green">198</FONT>      }<a name="line.198"></a>
+<FONT color="green">199</FONT>    }<a name="line.199"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

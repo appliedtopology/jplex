@@ -1,0 +1,967 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  Plex.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2007, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  Entry points for Plex. And catchall for utility code, for now.<a name="line.21"></a>
+<FONT color="green">022</FONT>    // <a name="line.22"></a>
+<FONT color="green">023</FONT>    //  $Id: Plex.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.23"></a>
+<FONT color="green">024</FONT>    // <a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    package edu.stanford.math.plex;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.*;<a name="line.27"></a>
+<FONT color="green">028</FONT>    <a name="line.28"></a>
+<FONT color="green">029</FONT>    /**<a name="line.29"></a>
+<FONT color="green">030</FONT>     * The &lt;code&gt;Plex&lt;/code&gt; class provides some utility functions that don't<a name="line.30"></a>
+<FONT color="green">031</FONT>     * have a clearly defined home, and some entry points into plex library<a name="line.31"></a>
+<FONT color="green">032</FONT>     * code that are especially useful when in matlab. It is (apparently)<a name="line.32"></a>
+<FONT color="green">033</FONT>     * impossible in matlab to execute code like &lt;code&gt;new PlexClass()&lt;/code&gt;,<a name="line.33"></a>
+<FONT color="green">034</FONT>     * so we provide static methods for creating Plex objects in matlab. The<a name="line.34"></a>
+<FONT color="green">035</FONT>     * naming convention for these methods is that the constructor for<a name="line.35"></a>
+<FONT color="green">036</FONT>     * instances of &lt;code&gt;PlexClass&lt;/code&gt; will be named<a name="line.36"></a>
+<FONT color="green">037</FONT>     * &lt;code&gt;PlexClass()&lt;/code&gt;, and its argument spectrum will be whatever the<a name="line.37"></a>
+<FONT color="green">038</FONT>     * usual form (or forms) of the associated constuctor are.<a name="line.38"></a>
+<FONT color="green">039</FONT>     *<a name="line.39"></a>
+<FONT color="green">040</FONT>     * @version $Id: Plex.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.40"></a>
+<FONT color="green">041</FONT>     */<a name="line.41"></a>
+<FONT color="green">042</FONT>    public class Plex {<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>      private static Random rand = new Random();<a name="line.44"></a>
+<FONT color="green">045</FONT>    <a name="line.45"></a>
+<FONT color="green">046</FONT>      // Compute the size of the intersection of v1 and v2, assuming that no<a name="line.46"></a>
+<FONT color="green">047</FONT>      // elements appear in either v1 or v2 more than once. This method has the<a name="line.47"></a>
+<FONT color="green">048</FONT>      // advantage that it doesn't need the arguments to sorted. If the sets<a name="line.48"></a>
+<FONT color="green">049</FONT>      // are already sorted or we actually want the intersection, see below.<a name="line.49"></a>
+<FONT color="green">050</FONT>      public static final int intersection_count(int[] v1, int[] v2) {<a name="line.50"></a>
+<FONT color="green">051</FONT>        int[] tmp = new int[v1.length + v2.length];<a name="line.51"></a>
+<FONT color="green">052</FONT>        if (tmp.length == 0)<a name="line.52"></a>
+<FONT color="green">053</FONT>          return 0;<a name="line.53"></a>
+<FONT color="green">054</FONT>        int tmp_counter = 0;<a name="line.54"></a>
+<FONT color="green">055</FONT>        for (int i = 0; i &lt; v1.length; i++)<a name="line.55"></a>
+<FONT color="green">056</FONT>          tmp[tmp_counter++] = v1[i];<a name="line.56"></a>
+<FONT color="green">057</FONT>        for (int i = 0; i &lt; v2.length; i++)<a name="line.57"></a>
+<FONT color="green">058</FONT>          tmp[tmp_counter++] = v2[i];<a name="line.58"></a>
+<FONT color="green">059</FONT>        assert(tmp_counter == tmp.length);<a name="line.59"></a>
+<FONT color="green">060</FONT>        Arrays.sort(tmp);<a name="line.60"></a>
+<FONT color="green">061</FONT>    <a name="line.61"></a>
+<FONT color="green">062</FONT>        int intersection_counter = 0;<a name="line.62"></a>
+<FONT color="green">063</FONT>        int current_tmpval = tmp[0];<a name="line.63"></a>
+<FONT color="green">064</FONT>        int current_hits = 1;<a name="line.64"></a>
+<FONT color="green">065</FONT>        for (int i = 1; i &lt; tmp.length; i++) {<a name="line.65"></a>
+<FONT color="green">066</FONT>          int x = tmp[i];<a name="line.66"></a>
+<FONT color="green">067</FONT>          if (x == current_tmpval)<a name="line.67"></a>
+<FONT color="green">068</FONT>            current_hits++;<a name="line.68"></a>
+<FONT color="green">069</FONT>          else {<a name="line.69"></a>
+<FONT color="green">070</FONT>            if (current_hits &gt; 1) {<a name="line.70"></a>
+<FONT color="green">071</FONT>              assert(current_hits == 2);<a name="line.71"></a>
+<FONT color="green">072</FONT>              intersection_counter++;<a name="line.72"></a>
+<FONT color="green">073</FONT>            }<a name="line.73"></a>
+<FONT color="green">074</FONT>            current_hits = 1;<a name="line.74"></a>
+<FONT color="green">075</FONT>            current_tmpval = x;<a name="line.75"></a>
+<FONT color="green">076</FONT>          }<a name="line.76"></a>
+<FONT color="green">077</FONT>        }<a name="line.77"></a>
+<FONT color="green">078</FONT>          <a name="line.78"></a>
+<FONT color="green">079</FONT>        return intersection_counter;<a name="line.79"></a>
+<FONT color="green">080</FONT>      }<a name="line.80"></a>
+<FONT color="green">081</FONT>      <a name="line.81"></a>
+<FONT color="green">082</FONT>      /**<a name="line.82"></a>
+<FONT color="green">083</FONT>       * Compute the overlap size for two sorted arrays using the zipper algorithm.<a name="line.83"></a>
+<FONT color="green">084</FONT>       *<a name="line.84"></a>
+<FONT color="green">085</FONT>       * @param      v1  First sorted array.<a name="line.85"></a>
+<FONT color="green">086</FONT>       * @param      v2  Second sorted array.<a name="line.86"></a>
+<FONT color="green">087</FONT>       * @return     The number of common elements of v1 and v2.<a name="line.87"></a>
+<FONT color="green">088</FONT>       *<a name="line.88"></a>
+<FONT color="green">089</FONT>       */<a name="line.89"></a>
+<FONT color="green">090</FONT>      public final static int sorted_intersection_count(int[] v1, int[] v2) {<a name="line.90"></a>
+<FONT color="green">091</FONT>        int count = 0;<a name="line.91"></a>
+<FONT color="green">092</FONT>    <a name="line.92"></a>
+<FONT color="green">093</FONT>        int i = 0;<a name="line.93"></a>
+<FONT color="green">094</FONT>        int i_max = v1.length-1;<a name="line.94"></a>
+<FONT color="green">095</FONT>    <a name="line.95"></a>
+<FONT color="green">096</FONT>        int j = 0;<a name="line.96"></a>
+<FONT color="green">097</FONT>        int j_max = v2.length-1;<a name="line.97"></a>
+<FONT color="green">098</FONT>    <a name="line.98"></a>
+<FONT color="green">099</FONT>        if ((i &gt; i_max) || (j &gt; j_max))<a name="line.99"></a>
+<FONT color="green">100</FONT>          return count;<a name="line.100"></a>
+<FONT color="green">101</FONT>    <a name="line.101"></a>
+<FONT color="green">102</FONT>        int max_xi = v1[i_max];<a name="line.102"></a>
+<FONT color="green">103</FONT>        int max_xj = v2[j_max];<a name="line.103"></a>
+<FONT color="green">104</FONT>    <a name="line.104"></a>
+<FONT color="green">105</FONT>        int xi = v1[i];<a name="line.105"></a>
+<FONT color="green">106</FONT>        if (xi &gt; max_xj) return count;<a name="line.106"></a>
+<FONT color="green">107</FONT>        int xj = v2[j];<a name="line.107"></a>
+<FONT color="green">108</FONT>        if (xj &gt; max_xi) return count;<a name="line.108"></a>
+<FONT color="green">109</FONT>    <a name="line.109"></a>
+<FONT color="green">110</FONT>        while (true) {<a name="line.110"></a>
+<FONT color="green">111</FONT>          if (xi == xj) {<a name="line.111"></a>
+<FONT color="green">112</FONT>            count++;<a name="line.112"></a>
+<FONT color="green">113</FONT>            i++;<a name="line.113"></a>
+<FONT color="green">114</FONT>            j++;<a name="line.114"></a>
+<FONT color="green">115</FONT>            if ((i &gt; i_max) || (j &gt; j_max))<a name="line.115"></a>
+<FONT color="green">116</FONT>              return count;<a name="line.116"></a>
+<FONT color="green">117</FONT>            else {<a name="line.117"></a>
+<FONT color="green">118</FONT>              xi = v1[i];<a name="line.118"></a>
+<FONT color="green">119</FONT>              if (xi &gt; max_xj) return count;<a name="line.119"></a>
+<FONT color="green">120</FONT>              xj = v2[j];<a name="line.120"></a>
+<FONT color="green">121</FONT>              if (xj &gt; max_xi) return count;<a name="line.121"></a>
+<FONT color="green">122</FONT>            }<a name="line.122"></a>
+<FONT color="green">123</FONT>          } else if (xi &lt; xj) {<a name="line.123"></a>
+<FONT color="green">124</FONT>            i++;<a name="line.124"></a>
+<FONT color="green">125</FONT>            xi = v1[i];<a name="line.125"></a>
+<FONT color="green">126</FONT>            if (xi &gt; max_xj) return count;<a name="line.126"></a>
+<FONT color="green">127</FONT>          } else {<a name="line.127"></a>
+<FONT color="green">128</FONT>            j++;<a name="line.128"></a>
+<FONT color="green">129</FONT>            xj = v2[j];<a name="line.129"></a>
+<FONT color="green">130</FONT>            if (xj &gt; max_xi) return count;<a name="line.130"></a>
+<FONT color="green">131</FONT>          }<a name="line.131"></a>
+<FONT color="green">132</FONT>        }<a name="line.132"></a>
+<FONT color="green">133</FONT>      }<a name="line.133"></a>
+<FONT color="green">134</FONT>    <a name="line.134"></a>
+<FONT color="green">135</FONT>    <a name="line.135"></a>
+<FONT color="green">136</FONT>      /**<a name="line.136"></a>
+<FONT color="green">137</FONT>       * Take subset_size distinct entries from initial segment of length<a name="line.137"></a>
+<FONT color="green">138</FONT>       * set_size in set[] and put them in the initial segment of subset[]. The<a name="line.138"></a>
+<FONT color="green">139</FONT>       * ordering of the entries is preserved -- that is, if set[i] and<a name="line.139"></a>
+<FONT color="green">140</FONT>       * set[i+d] both go into subset, the index of set[i] is less than that of<a name="line.140"></a>
+<FONT color="green">141</FONT>       * set[i+d].  &lt;p&gt;<a name="line.141"></a>
+<FONT color="green">142</FONT>       * @param      set an int[] from which to select.<a name="line.142"></a>
+<FONT color="green">143</FONT>       * @param      set_size  an int specifying how many entries to use.<a name="line.143"></a>
+<FONT color="green">144</FONT>       * @param      subset an int[] in which to deposit the selections.<a name="line.144"></a>
+<FONT color="green">145</FONT>       * @param      subset_size an int specifying how many entries to select.<a name="line.145"></a>
+<FONT color="green">146</FONT>       */<a name="line.146"></a>
+<FONT color="green">147</FONT>      public static void random_subset(int[] set, int set_size, <a name="line.147"></a>
+<FONT color="green">148</FONT>                                       int[] subset, int subset_size) {<a name="line.148"></a>
+<FONT color="green">149</FONT>        if (subset_size &gt; set_size)<a name="line.149"></a>
+<FONT color="green">150</FONT>          throw new IllegalArgumentException("Requested subset is larger than argument set.");<a name="line.150"></a>
+<FONT color="green">151</FONT>        if (subset_size &gt; subset.length)<a name="line.151"></a>
+<FONT color="green">152</FONT>          throw new IllegalArgumentException("Requested subset is larger than storage given.");<a name="line.152"></a>
+<FONT color="green">153</FONT>        if (set_size &gt; set.length)<a name="line.153"></a>
+<FONT color="green">154</FONT>          throw new IllegalArgumentException("Set storage smaller than argument size.");<a name="line.154"></a>
+<FONT color="green">155</FONT>        if (subset_size &lt;= 0)<a name="line.155"></a>
+<FONT color="green">156</FONT>          return;<a name="line.156"></a>
+<FONT color="green">157</FONT>    <a name="line.157"></a>
+<FONT color="green">158</FONT>        int[] tmp = new int[set_size];<a name="line.158"></a>
+<FONT color="green">159</FONT>        random_permutation(tmp);<a name="line.159"></a>
+<FONT color="green">160</FONT>        for (int i = 0; i &lt; subset_size; i++) {<a name="line.160"></a>
+<FONT color="green">161</FONT>          subset[i] = tmp[i];<a name="line.161"></a>
+<FONT color="green">162</FONT>        }<a name="line.162"></a>
+<FONT color="green">163</FONT>        Arrays.sort(subset, 0, subset_size);<a name="line.163"></a>
+<FONT color="green">164</FONT>        for (int i = 0; i &lt; subset_size; i++) {<a name="line.164"></a>
+<FONT color="green">165</FONT>          subset[i] = set[subset[i]];<a name="line.165"></a>
+<FONT color="green">166</FONT>        }<a name="line.166"></a>
+<FONT color="green">167</FONT>      }<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>      /**<a name="line.169"></a>
+<FONT color="green">170</FONT>       * Take subset.length distinct entries from set[], and put them in<a name="line.170"></a>
+<FONT color="green">171</FONT>       * subset[]. <a name="line.171"></a>
+<FONT color="green">172</FONT>       * &lt;p&gt;<a name="line.172"></a>
+<FONT color="green">173</FONT>       * @param      set an int[] from which to select.<a name="line.173"></a>
+<FONT color="green">174</FONT>       * @param      subset an int[] in which to deposit the selections.<a name="line.174"></a>
+<FONT color="green">175</FONT>       */<a name="line.175"></a>
+<FONT color="green">176</FONT>      public static void random_subset(int[] set, int[] subset) {<a name="line.176"></a>
+<FONT color="green">177</FONT>        random_subset(set, set.length, subset, subset.length);<a name="line.177"></a>
+<FONT color="green">178</FONT>      }<a name="line.178"></a>
+<FONT color="green">179</FONT>    <a name="line.179"></a>
+<FONT color="green">180</FONT>      /**<a name="line.180"></a>
+<FONT color="green">181</FONT>       * Take subset_size distinct entries from the integers 1 through N,<a name="line.181"></a>
+<FONT color="green">182</FONT>       * and put them in the initial segment of subset[].<a name="line.182"></a>
+<FONT color="green">183</FONT>       * &lt;p&gt;<a name="line.183"></a>
+<FONT color="green">184</FONT>       * @param      N  an int specifying the range from which to choose the subset.<a name="line.184"></a>
+<FONT color="green">185</FONT>       * @param      subset an int[] in which to deposit the selections.<a name="line.185"></a>
+<FONT color="green">186</FONT>       * @param      subset_size  an int specifying how many entries to use.<a name="line.186"></a>
+<FONT color="green">187</FONT>       */<a name="line.187"></a>
+<FONT color="green">188</FONT>      public static void random_subset(int N, int[] subset, int subset_size) {<a name="line.188"></a>
+<FONT color="green">189</FONT>        if (subset_size &gt; subset.length)<a name="line.189"></a>
+<FONT color="green">190</FONT>          throw new IllegalArgumentException("Requested subset is larger than storage given.");<a name="line.190"></a>
+<FONT color="green">191</FONT>        if (subset.length &lt;= 0)<a name="line.191"></a>
+<FONT color="green">192</FONT>          return;<a name="line.192"></a>
+<FONT color="green">193</FONT>        int[] tmp = new int[N];<a name="line.193"></a>
+<FONT color="green">194</FONT>        random_permutation(tmp);<a name="line.194"></a>
+<FONT color="green">195</FONT>        // The entries of tmp range from 0 to N-1, so we need to add 1 to each of them.<a name="line.195"></a>
+<FONT color="green">196</FONT>        for (int i = 0; i &lt; subset_size; i++) {<a name="line.196"></a>
+<FONT color="green">197</FONT>          subset[i] = tmp[i]+1;<a name="line.197"></a>
+<FONT color="green">198</FONT>        }<a name="line.198"></a>
+<FONT color="green">199</FONT>        Arrays.sort(subset, 0, subset_size);<a name="line.199"></a>
+<FONT color="green">200</FONT>      }<a name="line.200"></a>
+<FONT color="green">201</FONT>    <a name="line.201"></a>
+<FONT color="green">202</FONT>      /**<a name="line.202"></a>
+<FONT color="green">203</FONT>       * Take subset.length distinct entries from the integers 1 through N,<a name="line.203"></a>
+<FONT color="green">204</FONT>       * and put them in subset[].<a name="line.204"></a>
+<FONT color="green">205</FONT>       * &lt;p&gt;<a name="line.205"></a>
+<FONT color="green">206</FONT>       * @param      N  an int specifying the range from which to choose the subset.<a name="line.206"></a>
+<FONT color="green">207</FONT>       * @param      subset an int[] in which to deposit the selections.<a name="line.207"></a>
+<FONT color="green">208</FONT>       */<a name="line.208"></a>
+<FONT color="green">209</FONT>      public static void random_subset(int N, int[] subset) {<a name="line.209"></a>
+<FONT color="green">210</FONT>        random_subset(N, subset, subset.length);<a name="line.210"></a>
+<FONT color="green">211</FONT>      }<a name="line.211"></a>
+<FONT color="green">212</FONT>    <a name="line.212"></a>
+<FONT color="green">213</FONT>      // confirm that this is a permutation<a name="line.213"></a>
+<FONT color="green">214</FONT>      private static boolean is_permutation (int[] perm) {<a name="line.214"></a>
+<FONT color="green">215</FONT>        int[] tmp = new int[perm.length];<a name="line.215"></a>
+<FONT color="green">216</FONT>        for (int i = 0; i &lt; perm.length; i++)<a name="line.216"></a>
+<FONT color="green">217</FONT>          tmp[perm[i]]++;<a name="line.217"></a>
+<FONT color="green">218</FONT>        for (int i = 0; i &lt; perm.length; i++) {<a name="line.218"></a>
+<FONT color="green">219</FONT>          if (tmp[i] != 1)<a name="line.219"></a>
+<FONT color="green">220</FONT>            return false;<a name="line.220"></a>
+<FONT color="green">221</FONT>        }<a name="line.221"></a>
+<FONT color="green">222</FONT>        return true;<a name="line.222"></a>
+<FONT color="green">223</FONT>      }<a name="line.223"></a>
+<FONT color="green">224</FONT>    <a name="line.224"></a>
+<FONT color="green">225</FONT>      /**<a name="line.225"></a>
+<FONT color="green">226</FONT>       * Make a random permutation of the integers 0 through perm.length-1<a name="line.226"></a>
+<FONT color="green">227</FONT>       * and put them in perm.<a name="line.227"></a>
+<FONT color="green">228</FONT>       * &lt;p&gt;<a name="line.228"></a>
+<FONT color="green">229</FONT>       * @param      perm  an int[] to hold a random permutation.<a name="line.229"></a>
+<FONT color="green">230</FONT>       */<a name="line.230"></a>
+<FONT color="green">231</FONT>      public static void random_permutation(int[] perm) {<a name="line.231"></a>
+<FONT color="green">232</FONT>        if (perm.length &lt;= 0)<a name="line.232"></a>
+<FONT color="green">233</FONT>          return;<a name="line.233"></a>
+<FONT color="green">234</FONT>        // start with the identity<a name="line.234"></a>
+<FONT color="green">235</FONT>        for (int i = 0; i &lt; perm.length; i++)<a name="line.235"></a>
+<FONT color="green">236</FONT>          perm[i] = i;<a name="line.236"></a>
+<FONT color="green">237</FONT>        for (int current = perm.length; current &gt; 0; current--) {<a name="line.237"></a>
+<FONT color="green">238</FONT>          int swap_to = rand.nextInt(current);<a name="line.238"></a>
+<FONT color="green">239</FONT>          int swap_from = current - 1;<a name="line.239"></a>
+<FONT color="green">240</FONT>          int tmp = perm[swap_to];<a name="line.240"></a>
+<FONT color="green">241</FONT>          perm[swap_to] = perm[swap_from];<a name="line.241"></a>
+<FONT color="green">242</FONT>          perm[swap_from] = tmp;<a name="line.242"></a>
+<FONT color="green">243</FONT>        }<a name="line.243"></a>
+<FONT color="green">244</FONT>        assert(is_permutation(perm));<a name="line.244"></a>
+<FONT color="green">245</FONT>      }<a name="line.245"></a>
+<FONT color="green">246</FONT>    <a name="line.246"></a>
+<FONT color="green">247</FONT>      /**<a name="line.247"></a>
+<FONT color="green">248</FONT>       * Take an array of int and make a string.<a name="line.248"></a>
+<FONT color="green">249</FONT>       * &lt;p&gt;<a name="line.249"></a>
+<FONT color="green">250</FONT>       * @param      x  an int[] we want to examine.<a name="line.250"></a>
+<FONT color="green">251</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.251"></a>
+<FONT color="green">252</FONT>       * @return     A String instance that "looks like" x.<a name="line.252"></a>
+<FONT color="green">253</FONT>       */<a name="line.253"></a>
+<FONT color="green">254</FONT>      public static String toString(int[] x, int max_entries) {<a name="line.254"></a>
+<FONT color="green">255</FONT>        if (x == null)<a name="line.255"></a>
+<FONT color="green">256</FONT>          return "&lt;null&gt;";<a name="line.256"></a>
+<FONT color="green">257</FONT>        int max = Math.min(max_entries, x.length);<a name="line.257"></a>
+<FONT color="green">258</FONT>        String start = "{";<a name="line.258"></a>
+<FONT color="green">259</FONT>        if (max &gt;= 1)<a name="line.259"></a>
+<FONT color="green">260</FONT>          start = start + " " + x[0];<a name="line.260"></a>
+<FONT color="green">261</FONT>        for (int i = 1; i &lt; max; i++) {<a name="line.261"></a>
+<FONT color="green">262</FONT>          start = start + ", " + x[i];<a name="line.262"></a>
+<FONT color="green">263</FONT>        }<a name="line.263"></a>
+<FONT color="green">264</FONT>        if (max &lt; x.length)<a name="line.264"></a>
+<FONT color="green">265</FONT>          start = start + " ...";<a name="line.265"></a>
+<FONT color="green">266</FONT>        return start + " }";<a name="line.266"></a>
+<FONT color="green">267</FONT>      }<a name="line.267"></a>
+<FONT color="green">268</FONT>    <a name="line.268"></a>
+<FONT color="green">269</FONT>      /**<a name="line.269"></a>
+<FONT color="green">270</FONT>       * Take an array of int and make a string.<a name="line.270"></a>
+<FONT color="green">271</FONT>       * &lt;p&gt;<a name="line.271"></a>
+<FONT color="green">272</FONT>       * @param      x  an int[] we want to examine.<a name="line.272"></a>
+<FONT color="green">273</FONT>       * @return     A String instance that "looks like" x.<a name="line.273"></a>
+<FONT color="green">274</FONT>       */<a name="line.274"></a>
+<FONT color="green">275</FONT>      public static String toString(int[] x) {<a name="line.275"></a>
+<FONT color="green">276</FONT>        return toString(x, 100);<a name="line.276"></a>
+<FONT color="green">277</FONT>      }<a name="line.277"></a>
+<FONT color="green">278</FONT>    <a name="line.278"></a>
+<FONT color="green">279</FONT>      /**<a name="line.279"></a>
+<FONT color="green">280</FONT>       * Take an array of byte and make a string.<a name="line.280"></a>
+<FONT color="green">281</FONT>       * &lt;p&gt;<a name="line.281"></a>
+<FONT color="green">282</FONT>       * @param      x  an byte[] we want to examine.<a name="line.282"></a>
+<FONT color="green">283</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.283"></a>
+<FONT color="green">284</FONT>       * @return     A String instance that "looks like" x.<a name="line.284"></a>
+<FONT color="green">285</FONT>       */<a name="line.285"></a>
+<FONT color="green">286</FONT>      public static String toString(byte[] x, int max_entries) {<a name="line.286"></a>
+<FONT color="green">287</FONT>        if (x == null)<a name="line.287"></a>
+<FONT color="green">288</FONT>          return "&lt;null&gt;";<a name="line.288"></a>
+<FONT color="green">289</FONT>        int max = Math.min(max_entries, x.length);<a name="line.289"></a>
+<FONT color="green">290</FONT>        String start = "{";<a name="line.290"></a>
+<FONT color="green">291</FONT>        if (max &gt;= 1)<a name="line.291"></a>
+<FONT color="green">292</FONT>          start = start + " " + x[0];<a name="line.292"></a>
+<FONT color="green">293</FONT>        for (int i = 1; i &lt; max; i++) {<a name="line.293"></a>
+<FONT color="green">294</FONT>          start = start + ", " + x[i];<a name="line.294"></a>
+<FONT color="green">295</FONT>        }<a name="line.295"></a>
+<FONT color="green">296</FONT>        if (max &lt; x.length)<a name="line.296"></a>
+<FONT color="green">297</FONT>          start = start + " ...";<a name="line.297"></a>
+<FONT color="green">298</FONT>        return start + " }";<a name="line.298"></a>
+<FONT color="green">299</FONT>      }<a name="line.299"></a>
+<FONT color="green">300</FONT>    <a name="line.300"></a>
+<FONT color="green">301</FONT>      /**<a name="line.301"></a>
+<FONT color="green">302</FONT>       * Take an array of byte and make a string.<a name="line.302"></a>
+<FONT color="green">303</FONT>       * &lt;p&gt;<a name="line.303"></a>
+<FONT color="green">304</FONT>       * @param      x  an byte[] we want to examine.<a name="line.304"></a>
+<FONT color="green">305</FONT>       * @return     A String instance that "looks like" x.<a name="line.305"></a>
+<FONT color="green">306</FONT>       */<a name="line.306"></a>
+<FONT color="green">307</FONT>      public static String toString(byte[] x) {<a name="line.307"></a>
+<FONT color="green">308</FONT>        return toString(x, 100);<a name="line.308"></a>
+<FONT color="green">309</FONT>      }<a name="line.309"></a>
+<FONT color="green">310</FONT>    <a name="line.310"></a>
+<FONT color="green">311</FONT>      /**<a name="line.311"></a>
+<FONT color="green">312</FONT>       * Take an array of int[] and make a string.<a name="line.312"></a>
+<FONT color="green">313</FONT>       * &lt;p&gt;<a name="line.313"></a>
+<FONT color="green">314</FONT>       * @param      x  an int[][] we want to examine.<a name="line.314"></a>
+<FONT color="green">315</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.315"></a>
+<FONT color="green">316</FONT>       * @return     A String instance that "looks like" x.<a name="line.316"></a>
+<FONT color="green">317</FONT>       */<a name="line.317"></a>
+<FONT color="green">318</FONT>      public static String toString(int[][] x, int max_entries) {<a name="line.318"></a>
+<FONT color="green">319</FONT>        int max = Math.min(max_entries, x.length);<a name="line.319"></a>
+<FONT color="green">320</FONT>        String start = "{";<a name="line.320"></a>
+<FONT color="green">321</FONT>        if (max &gt;= 1)<a name="line.321"></a>
+<FONT color="green">322</FONT>          start = start + " " + toString(x[0], max_entries) + "\n";<a name="line.322"></a>
+<FONT color="green">323</FONT>        for (int i = 1; i &lt; max; i++) {<a name="line.323"></a>
+<FONT color="green">324</FONT>          start = start + ", " + toString(x[i], max_entries) + "\n";<a name="line.324"></a>
+<FONT color="green">325</FONT>        }<a name="line.325"></a>
+<FONT color="green">326</FONT>        if (max &lt; x.length)<a name="line.326"></a>
+<FONT color="green">327</FONT>          start = start + " ...";<a name="line.327"></a>
+<FONT color="green">328</FONT>        return start + " }";<a name="line.328"></a>
+<FONT color="green">329</FONT>      }<a name="line.329"></a>
+<FONT color="green">330</FONT>    <a name="line.330"></a>
+<FONT color="green">331</FONT>    <a name="line.331"></a>
+<FONT color="green">332</FONT>      /**<a name="line.332"></a>
+<FONT color="green">333</FONT>       * Take an int[][] and make a string.<a name="line.333"></a>
+<FONT color="green">334</FONT>       * &lt;p&gt;<a name="line.334"></a>
+<FONT color="green">335</FONT>       * @param      x  an int[][] we want to examine.<a name="line.335"></a>
+<FONT color="green">336</FONT>       * @return     A String instance that "looks like" x.<a name="line.336"></a>
+<FONT color="green">337</FONT>       */<a name="line.337"></a>
+<FONT color="green">338</FONT>      public static String toString(int[][] x) {<a name="line.338"></a>
+<FONT color="green">339</FONT>        return toString(x, 100);<a name="line.339"></a>
+<FONT color="green">340</FONT>      }<a name="line.340"></a>
+<FONT color="green">341</FONT>    <a name="line.341"></a>
+<FONT color="green">342</FONT>      /**<a name="line.342"></a>
+<FONT color="green">343</FONT>       * Take an array of double and make a string.<a name="line.343"></a>
+<FONT color="green">344</FONT>       * &lt;p&gt;<a name="line.344"></a>
+<FONT color="green">345</FONT>       * @param      x  a double[] we want to examine.<a name="line.345"></a>
+<FONT color="green">346</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.346"></a>
+<FONT color="green">347</FONT>       * @return     A String instance that "looks like" x.<a name="line.347"></a>
+<FONT color="green">348</FONT>       */<a name="line.348"></a>
+<FONT color="green">349</FONT>      public static String toString(double[] x, int max_entries) {<a name="line.349"></a>
+<FONT color="green">350</FONT>        if (x == null)<a name="line.350"></a>
+<FONT color="green">351</FONT>          return "&lt;null&gt;";<a name="line.351"></a>
+<FONT color="green">352</FONT>        int max = Math.min(max_entries, x.length);<a name="line.352"></a>
+<FONT color="green">353</FONT>        String start = "{";<a name="line.353"></a>
+<FONT color="green">354</FONT>        if (max &gt;= 1)<a name="line.354"></a>
+<FONT color="green">355</FONT>          start = start + String.format(" %.3g", x[0]);<a name="line.355"></a>
+<FONT color="green">356</FONT>        for (int i = 1; i &lt; max; i++) {<a name="line.356"></a>
+<FONT color="green">357</FONT>          start = start + String.format(", %.3g", x[i]);<a name="line.357"></a>
+<FONT color="green">358</FONT>        }<a name="line.358"></a>
+<FONT color="green">359</FONT>        if (max &lt; x.length)<a name="line.359"></a>
+<FONT color="green">360</FONT>          start = start + " ...";<a name="line.360"></a>
+<FONT color="green">361</FONT>        return start + " }";<a name="line.361"></a>
+<FONT color="green">362</FONT>      }<a name="line.362"></a>
+<FONT color="green">363</FONT>    <a name="line.363"></a>
+<FONT color="green">364</FONT>      /**<a name="line.364"></a>
+<FONT color="green">365</FONT>       * Take an array of double and make a string.<a name="line.365"></a>
+<FONT color="green">366</FONT>       * &lt;p&gt;<a name="line.366"></a>
+<FONT color="green">367</FONT>       * @param      x  a double[] we want to examine.<a name="line.367"></a>
+<FONT color="green">368</FONT>       * @return     A String instance that "looks like" x.<a name="line.368"></a>
+<FONT color="green">369</FONT>       */<a name="line.369"></a>
+<FONT color="green">370</FONT>      public static String toString(double[] x) {<a name="line.370"></a>
+<FONT color="green">371</FONT>        return toString(x, 100);<a name="line.371"></a>
+<FONT color="green">372</FONT>      }<a name="line.372"></a>
+<FONT color="green">373</FONT>    <a name="line.373"></a>
+<FONT color="green">374</FONT>    <a name="line.374"></a>
+<FONT color="green">375</FONT>      /**<a name="line.375"></a>
+<FONT color="green">376</FONT>       * Take an array of double[] and make a string.<a name="line.376"></a>
+<FONT color="green">377</FONT>       * &lt;p&gt;<a name="line.377"></a>
+<FONT color="green">378</FONT>       * @param      x  an double[][] we want to examine.<a name="line.378"></a>
+<FONT color="green">379</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.379"></a>
+<FONT color="green">380</FONT>       * @return     A String instance that "looks like" x.<a name="line.380"></a>
+<FONT color="green">381</FONT>       */<a name="line.381"></a>
+<FONT color="green">382</FONT>      public static String toString(double[][] x, int max_entries) {<a name="line.382"></a>
+<FONT color="green">383</FONT>        int max = Math.min(max_entries, x.length);<a name="line.383"></a>
+<FONT color="green">384</FONT>        String start = "{";<a name="line.384"></a>
+<FONT color="green">385</FONT>        if (max &gt;= 1)<a name="line.385"></a>
+<FONT color="green">386</FONT>          start = start + " " + toString(x[0], max_entries) + "\n";<a name="line.386"></a>
+<FONT color="green">387</FONT>        for (int i = 1; i &lt; max; i++) {<a name="line.387"></a>
+<FONT color="green">388</FONT>          start = start + ", " + toString(x[i], max_entries) + "\n";<a name="line.388"></a>
+<FONT color="green">389</FONT>        }<a name="line.389"></a>
+<FONT color="green">390</FONT>        if (max &lt; x.length)<a name="line.390"></a>
+<FONT color="green">391</FONT>          start = start + " ...";<a name="line.391"></a>
+<FONT color="green">392</FONT>        return start + " }";<a name="line.392"></a>
+<FONT color="green">393</FONT>      }<a name="line.393"></a>
+<FONT color="green">394</FONT>    <a name="line.394"></a>
+<FONT color="green">395</FONT>    <a name="line.395"></a>
+<FONT color="green">396</FONT>    <a name="line.396"></a>
+<FONT color="green">397</FONT>      /**<a name="line.397"></a>
+<FONT color="green">398</FONT>       * Take an double[][] and make a string.<a name="line.398"></a>
+<FONT color="green">399</FONT>       * &lt;p&gt;<a name="line.399"></a>
+<FONT color="green">400</FONT>       * @param      x  an double[][] we want to examine.<a name="line.400"></a>
+<FONT color="green">401</FONT>       * @return     A String instance that "looks like" x.<a name="line.401"></a>
+<FONT color="green">402</FONT>       */<a name="line.402"></a>
+<FONT color="green">403</FONT>      public static String toString(double[][] x) {<a name="line.403"></a>
+<FONT color="green">404</FONT>        return toString(x, 100);<a name="line.404"></a>
+<FONT color="green">405</FONT>      }<a name="line.405"></a>
+<FONT color="green">406</FONT>    <a name="line.406"></a>
+<FONT color="green">407</FONT>    <a name="line.407"></a>
+<FONT color="green">408</FONT>    <a name="line.408"></a>
+<FONT color="green">409</FONT>      /**<a name="line.409"></a>
+<FONT color="green">410</FONT>       * Take an array of long and make a string.<a name="line.410"></a>
+<FONT color="green">411</FONT>       * &lt;p&gt;<a name="line.411"></a>
+<FONT color="green">412</FONT>       * @param      x  a long[] we want to examine.<a name="line.412"></a>
+<FONT color="green">413</FONT>       * @param      max_entries  The maximum number of entries we wish to examine.<a name="line.413"></a>
+<FONT color="green">414</FONT>       * @return     A String instance that "looks like" x.<a name="line.414"></a>
+<FONT color="green">415</FONT>       */<a name="line.415"></a>
+<FONT color="green">416</FONT>      public static String toString(long[] x, int max_entries) {<a name="line.416"></a>
+<FONT color="green">417</FONT>        int max = Math.min(max_entries, x.length);<a name="line.417"></a>
+<FONT color="green">418</FONT>        String start = "[ ";<a name="line.418"></a>
+<FONT color="green">419</FONT>        for (int i = 0; i &lt; max; i++) {<a name="line.419"></a>
+<FONT color="green">420</FONT>          start = start + " " + x[i];<a name="line.420"></a>
+<FONT color="green">421</FONT>        }<a name="line.421"></a>
+<FONT color="green">422</FONT>        if (max &lt; x.length)<a name="line.422"></a>
+<FONT color="green">423</FONT>          start = start + " ...";<a name="line.423"></a>
+<FONT color="green">424</FONT>        return start + " ]";<a name="line.424"></a>
+<FONT color="green">425</FONT>      }<a name="line.425"></a>
+<FONT color="green">426</FONT>    <a name="line.426"></a>
+<FONT color="green">427</FONT>      /**<a name="line.427"></a>
+<FONT color="green">428</FONT>       * Take an array of long and make a string.<a name="line.428"></a>
+<FONT color="green">429</FONT>       * &lt;p&gt;<a name="line.429"></a>
+<FONT color="green">430</FONT>       * @param      x  a long[] we want to examine.<a name="line.430"></a>
+<FONT color="green">431</FONT>       * @return     A String instance that "looks like" x.<a name="line.431"></a>
+<FONT color="green">432</FONT>       */<a name="line.432"></a>
+<FONT color="green">433</FONT>      public static String toString(long[] x) {<a name="line.433"></a>
+<FONT color="green">434</FONT>        return toString(x, 100);<a name="line.434"></a>
+<FONT color="green">435</FONT>      }<a name="line.435"></a>
+<FONT color="green">436</FONT>    <a name="line.436"></a>
+<FONT color="green">437</FONT>    <a name="line.437"></a>
+<FONT color="green">438</FONT>      /**<a name="line.438"></a>
+<FONT color="green">439</FONT>       * Take subset_size distinct entries from the integers 0 through N-1,<a name="line.439"></a>
+<FONT color="green">440</FONT>       * and put them in the initial segment of subset[].<a name="line.440"></a>
+<FONT color="green">441</FONT>       * &lt;p&gt;<a name="line.441"></a>
+<FONT color="green">442</FONT>       * @param      N  an int specifying the range from which to choose the subset.<a name="line.442"></a>
+<FONT color="green">443</FONT>       * @param      subset an int[] in which to deposit the selections.<a name="line.443"></a>
+<FONT color="green">444</FONT>       * @param      subset_size  an int specifying how many entries to use.<a name="line.444"></a>
+<FONT color="green">445</FONT>       */<a name="line.445"></a>
+<FONT color="green">446</FONT>      public static void random_index_subset(int N, int[] subset, int subset_size) {<a name="line.446"></a>
+<FONT color="green">447</FONT>        if (subset_size &gt; subset.length)<a name="line.447"></a>
+<FONT color="green">448</FONT>          throw new IllegalArgumentException("Requested subset is larger than storage given.");<a name="line.448"></a>
+<FONT color="green">449</FONT>        if (subset.length &lt;= 0)<a name="line.449"></a>
+<FONT color="green">450</FONT>          return;<a name="line.450"></a>
+<FONT color="green">451</FONT>    <a name="line.451"></a>
+<FONT color="green">452</FONT>        int min_value = subset_size-1;<a name="line.452"></a>
+<FONT color="green">453</FONT>        int max_value = N-1;<a name="line.453"></a>
+<FONT color="green">454</FONT>        int current_index = subset_size - 1;<a name="line.454"></a>
+<FONT color="green">455</FONT>        int select_value = min_value;<a name="line.455"></a>
+<FONT color="green">456</FONT>        while (current_index &gt;= 0) {<a name="line.456"></a>
+<FONT color="green">457</FONT>          if (max_value &gt; min_value) <a name="line.457"></a>
+<FONT color="green">458</FONT>            select_value = min_value + rand.nextInt(1 + (max_value - min_value));<a name="line.458"></a>
+<FONT color="green">459</FONT>          else <a name="line.459"></a>
+<FONT color="green">460</FONT>            select_value = min_value;<a name="line.460"></a>
+<FONT color="green">461</FONT>          subset[current_index] = select_value;<a name="line.461"></a>
+<FONT color="green">462</FONT>          assert((select_value &gt;= 0) &amp;&amp; (select_value &lt;= N-1));<a name="line.462"></a>
+<FONT color="green">463</FONT>          assert((current_index &gt;= (subset_size-1)) || <a name="line.463"></a>
+<FONT color="green">464</FONT>                 (subset[current_index] &lt; subset[current_index+1]));<a name="line.464"></a>
+<FONT color="green">465</FONT>          current_index--;<a name="line.465"></a>
+<FONT color="green">466</FONT>          max_value = select_value-1;<a name="line.466"></a>
+<FONT color="green">467</FONT>          min_value--;<a name="line.467"></a>
+<FONT color="green">468</FONT>        }<a name="line.468"></a>
+<FONT color="green">469</FONT>        assert(current_index == -1);<a name="line.469"></a>
+<FONT color="green">470</FONT>      }<a name="line.470"></a>
+<FONT color="green">471</FONT>    <a name="line.471"></a>
+<FONT color="green">472</FONT>      // Compare two int[] arguments, returning negative if less, 0 if equal,<a name="line.472"></a>
+<FONT color="green">473</FONT>      // and positive if greater so that we can use it in binary search.<a name="line.473"></a>
+<FONT color="green">474</FONT>      static final int comparePtArrays (int[] pts1, int[] pts2) {<a name="line.474"></a>
+<FONT color="green">475</FONT>        int len1 = pts1.length;<a name="line.475"></a>
+<FONT color="green">476</FONT>        int len2 = pts2.length;<a name="line.476"></a>
+<FONT color="green">477</FONT>        int count = (len2 &gt; len1)?len2:len1;<a name="line.477"></a>
+<FONT color="green">478</FONT>        for (int i = 0; i &lt; count; i++) {<a name="line.478"></a>
+<FONT color="green">479</FONT>          if (pts1[i] != pts2[i])<a name="line.479"></a>
+<FONT color="green">480</FONT>            return (pts1[i] - pts2[i]);<a name="line.480"></a>
+<FONT color="green">481</FONT>        }<a name="line.481"></a>
+<FONT color="green">482</FONT>        return (len1 - len2);<a name="line.482"></a>
+<FONT color="green">483</FONT>      }<a name="line.483"></a>
+<FONT color="green">484</FONT>    <a name="line.484"></a>
+<FONT color="green">485</FONT>      // Compare two int[] arguments, returning TRUE if equal, else FALSE.<a name="line.485"></a>
+<FONT color="green">486</FONT>      static final boolean equalPtArrays (int[] pts1, int[] pts2) {<a name="line.486"></a>
+<FONT color="green">487</FONT>        if (pts1 == pts2)<a name="line.487"></a>
+<FONT color="green">488</FONT>          return true;<a name="line.488"></a>
+<FONT color="green">489</FONT>        else if ((pts1 == null) || (pts2 == null))<a name="line.489"></a>
+<FONT color="green">490</FONT>          return false;<a name="line.490"></a>
+<FONT color="green">491</FONT>        else if (pts1.length != pts2.length)<a name="line.491"></a>
+<FONT color="green">492</FONT>          return false;<a name="line.492"></a>
+<FONT color="green">493</FONT>        else {<a name="line.493"></a>
+<FONT color="green">494</FONT>          for (int i = 0; i &lt; pts1.length; i++) {<a name="line.494"></a>
+<FONT color="green">495</FONT>            if (pts1[i] != pts2[i])<a name="line.495"></a>
+<FONT color="green">496</FONT>              return false;<a name="line.496"></a>
+<FONT color="green">497</FONT>          }<a name="line.497"></a>
+<FONT color="green">498</FONT>          return true;<a name="line.498"></a>
+<FONT color="green">499</FONT>        }<a name="line.499"></a>
+<FONT color="green">500</FONT>      }<a name="line.500"></a>
+<FONT color="green">501</FONT>    <a name="line.501"></a>
+<FONT color="green">502</FONT>      // Find the first index i such that arg &gt;= pts[i]. Returns -1 for failure.<a name="line.502"></a>
+<FONT color="green">503</FONT>      // We start from argument "lo", which is <a name="line.503"></a>
+<FONT color="green">504</FONT>      private static final int firstSmallerPtIndex (int arg, int lo, int[] pts) {<a name="line.504"></a>
+<FONT color="green">505</FONT>        // Binary search.<a name="line.505"></a>
+<FONT color="green">506</FONT>        int hi = pts.length - 1;<a name="line.506"></a>
+<FONT color="green">507</FONT>    <a name="line.507"></a>
+<FONT color="green">508</FONT>        if ((lo &gt; hi) || (pts[hi] &gt; arg))<a name="line.508"></a>
+<FONT color="green">509</FONT>          return -1;<a name="line.509"></a>
+<FONT color="green">510</FONT>        else if (arg &gt;= pts[lo])<a name="line.510"></a>
+<FONT color="green">511</FONT>          return lo;<a name="line.511"></a>
+<FONT color="green">512</FONT>        else {<a name="line.512"></a>
+<FONT color="green">513</FONT>          // Do a binary search. At the top of the loop, we always have<a name="line.513"></a>
+<FONT color="green">514</FONT>          // that (pts[lo] &gt; arg), lo != hi, and (arg &gt;= pts[hi]).<a name="line.514"></a>
+<FONT color="green">515</FONT>          while (lo &lt; hi) {<a name="line.515"></a>
+<FONT color="green">516</FONT>            int mid = (lo + hi)/2;<a name="line.516"></a>
+<FONT color="green">517</FONT>    <a name="line.517"></a>
+<FONT color="green">518</FONT>            assert(lo &lt; hi);<a name="line.518"></a>
+<FONT color="green">519</FONT>            assert(pts[lo] &gt; arg);<a name="line.519"></a>
+<FONT color="green">520</FONT>            assert(pts[hi] &lt;= arg);<a name="line.520"></a>
+<FONT color="green">521</FONT>    <a name="line.521"></a>
+<FONT color="green">522</FONT>            if (mid == lo)<a name="line.522"></a>
+<FONT color="green">523</FONT>              return hi;<a name="line.523"></a>
+<FONT color="green">524</FONT>            else if (pts[mid] &gt; arg)<a name="line.524"></a>
+<FONT color="green">525</FONT>              lo = mid;<a name="line.525"></a>
+<FONT color="green">526</FONT>            else<a name="line.526"></a>
+<FONT color="green">527</FONT>              hi = mid;<a name="line.527"></a>
+<FONT color="green">528</FONT>          }<a name="line.528"></a>
+<FONT color="green">529</FONT>          // should never get here<a name="line.529"></a>
+<FONT color="green">530</FONT>          assert(false);<a name="line.530"></a>
+<FONT color="green">531</FONT>          return -1;<a name="line.531"></a>
+<FONT color="green">532</FONT>        }<a name="line.532"></a>
+<FONT color="green">533</FONT>      }<a name="line.533"></a>
+<FONT color="green">534</FONT>    <a name="line.534"></a>
+<FONT color="green">535</FONT>      // Returns TRUE if ipts is a subset of jpts.<a name="line.535"></a>
+<FONT color="green">536</FONT>      private static final boolean ptArrayIsSubset (int[] ipts, int[] jpts) {<a name="line.536"></a>
+<FONT color="green">537</FONT>        int j = 0;<a name="line.537"></a>
+<FONT color="green">538</FONT>    <a name="line.538"></a>
+<FONT color="green">539</FONT>        for (int i = 0; i &lt; ipts.length; i++) {<a name="line.539"></a>
+<FONT color="green">540</FONT>          if ((ipts.length - jpts.length) &gt; (i - j))<a name="line.540"></a>
+<FONT color="green">541</FONT>            // this the same as (ipts.length-i) &gt; (jpts.length-j), which<a name="line.541"></a>
+<FONT color="green">542</FONT>            // would mean that we have more points to find than we have<a name="line.542"></a>
+<FONT color="green">543</FONT>            // places to look for them<a name="line.543"></a>
+<FONT color="green">544</FONT>            return false;<a name="line.544"></a>
+<FONT color="green">545</FONT>    <a name="line.545"></a>
+<FONT color="green">546</FONT>          j = firstSmallerPtIndex (ipts[i], j, jpts);<a name="line.546"></a>
+<FONT color="green">547</FONT>          if ((j &lt; 0) || (ipts[i] != jpts[j]))<a name="line.547"></a>
+<FONT color="green">548</FONT>            // jpts is decreasing, so if the first entry is too small,<a name="line.548"></a>
+<FONT color="green">549</FONT>            // we'll never find a match<a name="line.549"></a>
+<FONT color="green">550</FONT>            return false;<a name="line.550"></a>
+<FONT color="green">551</FONT>          else<a name="line.551"></a>
+<FONT color="green">552</FONT>            j++;            <a name="line.552"></a>
+<FONT color="green">553</FONT>        }<a name="line.553"></a>
+<FONT color="green">554</FONT>      <a name="line.554"></a>
+<FONT color="green">555</FONT>        return true;<a name="line.555"></a>
+<FONT color="green">556</FONT>      }<a name="line.556"></a>
+<FONT color="green">557</FONT>    <a name="line.557"></a>
+<FONT color="green">558</FONT>    <a name="line.558"></a>
+<FONT color="green">559</FONT>      /**<a name="line.559"></a>
+<FONT color="green">560</FONT>       * An array of Betti numbers (int[]) boxed up for convenience.<a name="line.560"></a>
+<FONT color="green">561</FONT>       */<a name="line.561"></a>
+<FONT color="green">562</FONT>      public static class BettiNumbers {<a name="line.562"></a>
+<FONT color="green">563</FONT>        private final int[] numbers;<a name="line.563"></a>
+<FONT color="green">564</FONT>            <a name="line.564"></a>
+<FONT color="green">565</FONT>        // make sure the numbers array is okay.<a name="line.565"></a>
+<FONT color="green">566</FONT>        static private boolean init_okay(int[] init) {<a name="line.566"></a>
+<FONT color="green">567</FONT>          for (int i = 0; i &lt; init.length; i++) {<a name="line.567"></a>
+<FONT color="green">568</FONT>            if (init[i] &lt; 0)<a name="line.568"></a>
+<FONT color="green">569</FONT>              return false;<a name="line.569"></a>
+<FONT color="green">570</FONT>          }<a name="line.570"></a>
+<FONT color="green">571</FONT>          if ((init.length == 0) || (init[init.length-1] == 0))<a name="line.571"></a>
+<FONT color="green">572</FONT>            return false;<a name="line.572"></a>
+<FONT color="green">573</FONT>          return true;<a name="line.573"></a>
+<FONT color="green">574</FONT>        }<a name="line.574"></a>
+<FONT color="green">575</FONT>    <a name="line.575"></a>
+<FONT color="green">576</FONT>        // unused<a name="line.576"></a>
+<FONT color="green">577</FONT>        private BettiNumbers() { numbers = null; }<a name="line.577"></a>
+<FONT color="green">578</FONT>    <a name="line.578"></a>
+<FONT color="green">579</FONT>        /**<a name="line.579"></a>
+<FONT color="green">580</FONT>         * Encapsulate a verified array of Betti numbers.<a name="line.580"></a>
+<FONT color="green">581</FONT>         *<a name="line.581"></a>
+<FONT color="green">582</FONT>         * &lt;p&gt;<a name="line.582"></a>
+<FONT color="green">583</FONT>         * @param      init an int[] of betti numbers.<a name="line.583"></a>
+<FONT color="green">584</FONT>         * @exception  IllegalArgumentException <a name="line.584"></a>
+<FONT color="green">585</FONT>         */        <a name="line.585"></a>
+<FONT color="green">586</FONT>        public BettiNumbers(int[] init) {<a name="line.586"></a>
+<FONT color="green">587</FONT>          if (!init_okay(init))<a name="line.587"></a>
+<FONT color="green">588</FONT>            throw new IllegalArgumentException("Bad betti numbers");<a name="line.588"></a>
+<FONT color="green">589</FONT>          numbers = new int[init.length];<a name="line.589"></a>
+<FONT color="green">590</FONT>          for(int i = 0; i &lt; init.length; i++)<a name="line.590"></a>
+<FONT color="green">591</FONT>            numbers[i] = init[i];<a name="line.591"></a>
+<FONT color="green">592</FONT>        }<a name="line.592"></a>
+<FONT color="green">593</FONT>    <a name="line.593"></a>
+<FONT color="green">594</FONT>        /**<a name="line.594"></a>
+<FONT color="green">595</FONT>         * Make BettiNumbers printable.<a name="line.595"></a>
+<FONT color="green">596</FONT>         *<a name="line.596"></a>
+<FONT color="green">597</FONT>         * &lt;p&gt;<a name="line.597"></a>
+<FONT color="green">598</FONT>         * @return      String form of an array of Betti numbers.<a name="line.598"></a>
+<FONT color="green">599</FONT>         */        <a name="line.599"></a>
+<FONT color="green">600</FONT>        public String toString() {<a name="line.600"></a>
+<FONT color="green">601</FONT>          String base = "BN{";<a name="line.601"></a>
+<FONT color="green">602</FONT>          for (int i = 0; i &lt; numbers.length-1; i++) {<a name="line.602"></a>
+<FONT color="green">603</FONT>            base = base + String.format("%d, ", numbers[i]);<a name="line.603"></a>
+<FONT color="green">604</FONT>          }<a name="line.604"></a>
+<FONT color="green">605</FONT>          base = base + String.format("%d}", numbers[numbers.length-1]);<a name="line.605"></a>
+<FONT color="green">606</FONT>          return base;<a name="line.606"></a>
+<FONT color="green">607</FONT>        }<a name="line.607"></a>
+<FONT color="green">608</FONT>    <a name="line.608"></a>
+<FONT color="green">609</FONT>        /**<a name="line.609"></a>
+<FONT color="green">610</FONT>         * Determine if two instances of BettiNumbers are equal.<a name="line.610"></a>
+<FONT color="green">611</FONT>         *<a name="line.611"></a>
+<FONT color="green">612</FONT>         * &lt;p&gt;<a name="line.612"></a>
+<FONT color="green">613</FONT>         * param  obj    Object to check equality against.<a name="line.613"></a>
+<FONT color="green">614</FONT>         * @return      True if equal, else false.<a name="line.614"></a>
+<FONT color="green">615</FONT>         */        <a name="line.615"></a>
+<FONT color="green">616</FONT>        public boolean equals(Object obj) {<a name="line.616"></a>
+<FONT color="green">617</FONT>          if (!(obj instanceof BettiNumbers))<a name="line.617"></a>
+<FONT color="green">618</FONT>            return false;<a name="line.618"></a>
+<FONT color="green">619</FONT>          BettiNumbers b = (BettiNumbers) obj;<a name="line.619"></a>
+<FONT color="green">620</FONT>          return Plex.equalPtArrays(numbers, b.numbers);<a name="line.620"></a>
+<FONT color="green">621</FONT>        }<a name="line.621"></a>
+<FONT color="green">622</FONT>      }<a name="line.622"></a>
+<FONT color="green">623</FONT>    <a name="line.623"></a>
+<FONT color="green">624</FONT>      /**<a name="line.624"></a>
+<FONT color="green">625</FONT>       * Summarize the semi-infinite PersistenceIntervals.<a name="line.625"></a>
+<FONT color="green">626</FONT>       *<a name="line.626"></a>
+<FONT color="green">627</FONT>       * &lt;p&gt;<a name="line.627"></a>
+<FONT color="green">628</FONT>       * @param      coll  A collection of PersistenceIntervals.<a name="line.628"></a>
+<FONT color="green">629</FONT>       * @return     An instance of Plex.BettiNumbers.<a name="line.629"></a>
+<FONT color="green">630</FONT>       */<a name="line.630"></a>
+<FONT color="green">631</FONT>      public static BettiNumbers FilterInfinite(PersistenceInterval[] coll) {<a name="line.631"></a>
+<FONT color="green">632</FONT>        int max_dimension = 0;<a name="line.632"></a>
+<FONT color="green">633</FONT>        for (PersistenceInterval i : coll) {<a name="line.633"></a>
+<FONT color="green">634</FONT>          if (i.infiniteExtent() &amp;&amp; (i.dimension &gt; max_dimension))<a name="line.634"></a>
+<FONT color="green">635</FONT>            max_dimension = i.dimension;<a name="line.635"></a>
+<FONT color="green">636</FONT>        }<a name="line.636"></a>
+<FONT color="green">637</FONT>        int[] results = new int[max_dimension+1];<a name="line.637"></a>
+<FONT color="green">638</FONT>        for (PersistenceInterval i : coll) {<a name="line.638"></a>
+<FONT color="green">639</FONT>          if (i.infiniteExtent())<a name="line.639"></a>
+<FONT color="green">640</FONT>            results[i.dimension]++;<a name="line.640"></a>
+<FONT color="green">641</FONT>        }<a name="line.641"></a>
+<FONT color="green">642</FONT>        return new BettiNumbers(results);<a name="line.642"></a>
+<FONT color="green">643</FONT>      }<a name="line.643"></a>
+<FONT color="green">644</FONT>    <a name="line.644"></a>
+<FONT color="green">645</FONT>      /**<a name="line.645"></a>
+<FONT color="green">646</FONT>       * Create an empty SimplexStream.Stack.<a name="line.646"></a>
+<FONT color="green">647</FONT>       *<a name="line.647"></a>
+<FONT color="green">648</FONT>       * &lt;p&gt; The object returned from this method can be used to create a new<a name="line.648"></a>
+<FONT color="green">649</FONT>       * SimplexStream from the contents of another one, or using an<a name="line.649"></a>
+<FONT color="green">650</FONT>       * Interator&lt;Simplex&gt; constructed from such a stream.  &lt;p&gt;<a name="line.650"></a>
+<FONT color="green">651</FONT>       *<a name="line.651"></a>
+<FONT color="green">652</FONT>       * @param      max_findex   Largest filtration index used by entries in this stream.<a name="line.652"></a>
+<FONT color="green">653</FONT>       * @param      max_dimension Maximum dimension of Simplex instances stored in this stream.<a name="line.653"></a>
+<FONT color="green">654</FONT>       * @return    An empty SimplexStream.Stack.<a name="line.654"></a>
+<FONT color="green">655</FONT>       *<a name="line.655"></a>
+<FONT color="green">656</FONT>       */<a name="line.656"></a>
+<FONT color="green">657</FONT>      public static SimplexStream.Stack SimplexStack(int max_findex, int max_dimension) {<a name="line.657"></a>
+<FONT color="green">658</FONT>        return new SimplexStream.Stack(max_findex, max_dimension);<a name="line.658"></a>
+<FONT color="green">659</FONT>      }<a name="line.659"></a>
+<FONT color="green">660</FONT>    <a name="line.660"></a>
+<FONT color="green">661</FONT>    <a name="line.661"></a>
+<FONT color="green">662</FONT>      /**<a name="line.662"></a>
+<FONT color="green">663</FONT>       * Create a Persistence instance.<a name="line.663"></a>
+<FONT color="green">664</FONT>       *<a name="line.664"></a>
+<FONT color="green">665</FONT>       * &lt;p&gt; Used to calculate persistent homology; e.g., p.computeIntervals(stream).<a name="line.665"></a>
+<FONT color="green">666</FONT>       *<a name="line.666"></a>
+<FONT color="green">667</FONT>       * @return    A new Persistence instance.<a name="line.667"></a>
+<FONT color="green">668</FONT>       *<a name="line.668"></a>
+<FONT color="green">669</FONT>       */<a name="line.669"></a>
+<FONT color="green">670</FONT>      public static Persistence Persistence () {<a name="line.670"></a>
+<FONT color="green">671</FONT>        return new Persistence();<a name="line.671"></a>
+<FONT color="green">672</FONT>      }<a name="line.672"></a>
+<FONT color="green">673</FONT>    <a name="line.673"></a>
+<FONT color="green">674</FONT>      /**<a name="line.674"></a>
+<FONT color="green">675</FONT>       * Create a random EuclideanArrayData instance.<a name="line.675"></a>
+<FONT color="green">676</FONT>       *<a name="line.676"></a>
+<FONT color="green">677</FONT>       * &lt;p&gt;<a name="line.677"></a>
+<FONT color="green">678</FONT>       *<a name="line.678"></a>
+<FONT color="green">679</FONT>       * @param      num_pts  How many points.<a name="line.679"></a>
+<FONT color="green">680</FONT>       * @param      dimension Dimension of the space.<a name="line.680"></a>
+<FONT color="green">681</FONT>       * @return    A randomly generated EuclideanArrayData instance.<a name="line.681"></a>
+<FONT color="green">682</FONT>       *<a name="line.682"></a>
+<FONT color="green">683</FONT>       */<a name="line.683"></a>
+<FONT color="green">684</FONT>      public static EuclideanArrayData  EuclideanArrayData(int num_pts, int dimension) {<a name="line.684"></a>
+<FONT color="green">685</FONT>        return new EuclideanArrayData(num_pts, dimension);<a name="line.685"></a>
+<FONT color="green">686</FONT>      }<a name="line.686"></a>
+<FONT color="green">687</FONT>    <a name="line.687"></a>
+<FONT color="green">688</FONT>      /**<a name="line.688"></a>
+<FONT color="green">689</FONT>       * Create a EuclideanArrayData instance from a data array.<a name="line.689"></a>
+<FONT color="green">690</FONT>       *<a name="line.690"></a>
+<FONT color="green">691</FONT>       * &lt;p&gt;<a name="line.691"></a>
+<FONT color="green">692</FONT>       *<a name="line.692"></a>
+<FONT color="green">693</FONT>       * @param     data  The data.<a name="line.693"></a>
+<FONT color="green">694</FONT>       * @param     dimension  The dimension of the data.<a name="line.694"></a>
+<FONT color="green">695</FONT>       * @return    EuclideanArrayData instance encapsulating the argument data.<a name="line.695"></a>
+<FONT color="green">696</FONT>       *<a name="line.696"></a>
+<FONT color="green">697</FONT>       */<a name="line.697"></a>
+<FONT color="green">698</FONT>      public static EuclideanArrayData EuclideanArrayData(double[] data, int dimension) {<a name="line.698"></a>
+<FONT color="green">699</FONT>        return new EuclideanArrayData(data, dimension);<a name="line.699"></a>
+<FONT color="green">700</FONT>      }<a name="line.700"></a>
+<FONT color="green">701</FONT>    <a name="line.701"></a>
+<FONT color="green">702</FONT>    <a name="line.702"></a>
+<FONT color="green">703</FONT>      // make sure that the matrix is square<a name="line.703"></a>
+<FONT color="green">704</FONT>      private static final boolean d_okay(double[][] d) {<a name="line.704"></a>
+<FONT color="green">705</FONT>        for(int i = 0; i &lt; d.length; i++) {<a name="line.705"></a>
+<FONT color="green">706</FONT>          if (d.length != d[i].length)<a name="line.706"></a>
+<FONT color="green">707</FONT>            return false;<a name="line.707"></a>
+<FONT color="green">708</FONT>        }<a name="line.708"></a>
+<FONT color="green">709</FONT>        return true;<a name="line.709"></a>
+<FONT color="green">710</FONT>      }<a name="line.710"></a>
+<FONT color="green">711</FONT>    <a name="line.711"></a>
+<FONT color="green">712</FONT>      /**<a name="line.712"></a>
+<FONT color="green">713</FONT>       * Create a DistanceData instance.<a name="line.713"></a>
+<FONT color="green">714</FONT>       *<a name="line.714"></a>
+<FONT color="green">715</FONT>       * &lt;p&gt;<a name="line.715"></a>
+<FONT color="green">716</FONT>       *<a name="line.716"></a>
+<FONT color="green">717</FONT>       * @param      d  The distance matrix<a name="line.717"></a>
+<FONT color="green">718</FONT>       * @return    A DistanceData instance.<a name="line.718"></a>
+<FONT color="green">719</FONT>       *<a name="line.719"></a>
+<FONT color="green">720</FONT>       */<a name="line.720"></a>
+<FONT color="green">721</FONT>      public static DistanceData  DistanceData(double[][] d) {<a name="line.721"></a>
+<FONT color="green">722</FONT>        assert d_okay(d);<a name="line.722"></a>
+<FONT color="green">723</FONT>        return new DistanceData(d);<a name="line.723"></a>
+<FONT color="green">724</FONT>      }<a name="line.724"></a>
+<FONT color="green">725</FONT>    <a name="line.725"></a>
+<FONT color="green">726</FONT>      /**<a name="line.726"></a>
+<FONT color="green">727</FONT>       * Create a Torus with a given granulatity.<a name="line.727"></a>
+<FONT color="green">728</FONT>       * &lt;p&gt;<a name="line.728"></a>
+<FONT color="green">729</FONT>       *<a name="line.729"></a>
+<FONT color="green">730</FONT>       * @param      n   Split the Torus into n^^d squares, return the corners.<a name="line.730"></a>
+<FONT color="green">731</FONT>       * @return    PointData for a d-dimensional Torus.<a name="line.731"></a>
+<FONT color="green">732</FONT>       *<a name="line.732"></a>
+<FONT color="green">733</FONT>       */<a name="line.733"></a>
+<FONT color="green">734</FONT>      public static Torus Torus (int n, int d) {<a name="line.734"></a>
+<FONT color="green">735</FONT>        return new Torus(n, d);<a name="line.735"></a>
+<FONT color="green">736</FONT>      }<a name="line.736"></a>
+<FONT color="green">737</FONT>    <a name="line.737"></a>
+<FONT color="green">738</FONT>      /**<a name="line.738"></a>
+<FONT color="green">739</FONT>       * Make a stream of the simplices in a Rips complex for given data set.<a name="line.739"></a>
+<FONT color="green">740</FONT>       * &lt;p&gt;<a name="line.740"></a>
+<FONT color="green">741</FONT>       * @param      delta Granularity to apply to the underlying metric. <a name="line.741"></a>
+<FONT color="green">742</FONT>       * @param      max_distance   Maximum edge length we will consider.<a name="line.742"></a>
+<FONT color="green">743</FONT>       * @param      max_d   Maximum dimension of Simplex instances we construct.<a name="line.743"></a>
+<FONT color="green">744</FONT>       * @param      data   Metric data to use in constructing stream.<a name="line.744"></a>
+<FONT color="green">745</FONT>       *<a name="line.745"></a>
+<FONT color="green">746</FONT>       * @return    A SimplexStream.Stack containing the Rips complex.<a name="line.746"></a>
+<FONT color="green">747</FONT>       */<a name="line.747"></a>
+<FONT color="green">748</FONT>      public static RipsStream RipsStream(double delta, double max_distance, <a name="line.748"></a>
+<FONT color="green">749</FONT>                                          int max_d, PointData data) {<a name="line.749"></a>
+<FONT color="green">750</FONT>        return new RipsStream(delta, max_distance, max_d, data);<a name="line.750"></a>
+<FONT color="green">751</FONT>      }<a name="line.751"></a>
+<FONT color="green">752</FONT>    <a name="line.752"></a>
+<FONT color="green">753</FONT>      /**<a name="line.753"></a>
+<FONT color="green">754</FONT>       * Make an empty ExplicitStream. These are normally populated "by hand".<a name="line.754"></a>
+<FONT color="green">755</FONT>       * &lt;p&gt;<a name="line.755"></a>
+<FONT color="green">756</FONT>       *<a name="line.756"></a>
+<FONT color="green">757</FONT>       * @return    An empty ExplicitStream.<a name="line.757"></a>
+<FONT color="green">758</FONT>       */<a name="line.758"></a>
+<FONT color="green">759</FONT>      public static ExplicitStream ExplicitStream() {<a name="line.759"></a>
+<FONT color="green">760</FONT>        return new ExplicitStream();<a name="line.760"></a>
+<FONT color="green">761</FONT>      }<a name="line.761"></a>
+<FONT color="green">762</FONT>    <a name="line.762"></a>
+<FONT color="green">763</FONT>      /**<a name="line.763"></a>
+<FONT color="green">764</FONT>       * Convert a SimplexStream into an explicit one.<a name="line.764"></a>
+<FONT color="green">765</FONT>       *<a name="line.765"></a>
+<FONT color="green">766</FONT>       * &lt;p&gt;<a name="line.766"></a>
+<FONT color="green">767</FONT>       * @param      str A SimplexStream instance.<a name="line.767"></a>
+<FONT color="green">768</FONT>       * @return     An ExplicitStream with equivalent Simplex entries.<a name="line.768"></a>
+<FONT color="green">769</FONT>       *<a name="line.769"></a>
+<FONT color="green">770</FONT>       */<a name="line.770"></a>
+<FONT color="green">771</FONT>      public static ExplicitStream makeExplicit(SimplexStream str) {<a name="line.771"></a>
+<FONT color="green">772</FONT>        return ExplicitStream.makeExplicit(str);<a name="line.772"></a>
+<FONT color="green">773</FONT>      }<a name="line.773"></a>
+<FONT color="green">774</FONT>    <a name="line.774"></a>
+<FONT color="green">775</FONT>      /**<a name="line.775"></a>
+<FONT color="green">776</FONT>       * Make a new SimplexTable.<a name="line.776"></a>
+<FONT color="green">777</FONT>       *<a name="line.777"></a>
+<FONT color="green">778</FONT>       * &lt;p&gt;<a name="line.778"></a>
+<FONT color="green">779</FONT>       *<a name="line.779"></a>
+<FONT color="green">780</FONT>       * @param      limit   An upper bound on the number of simplices that <a name="line.780"></a>
+<FONT color="green">781</FONT>       *         will be interned in the table.<a name="line.781"></a>
+<FONT color="green">782</FONT>       *<a name="line.782"></a>
+<FONT color="green">783</FONT>       * @return    An empty SimplexTable.<a name="line.783"></a>
+<FONT color="green">784</FONT>       *<a name="line.784"></a>
+<FONT color="green">785</FONT>       * @see        edu.stanford.math.plex.SimplexTable#SimplexTable<a name="line.785"></a>
+<FONT color="green">786</FONT>       */<a name="line.786"></a>
+<FONT color="green">787</FONT>      public static SimplexTable SimplexTable (int limit) {<a name="line.787"></a>
+<FONT color="green">788</FONT>        return new SimplexTable(limit);<a name="line.788"></a>
+<FONT color="green">789</FONT>      }<a name="line.789"></a>
+<FONT color="green">790</FONT>    <a name="line.790"></a>
+<FONT color="green">791</FONT>      /**<a name="line.791"></a>
+<FONT color="green">792</FONT>       * Make a stream of the simplices in a Witness complex for data.<a name="line.792"></a>
+<FONT color="green">793</FONT>       * &lt;p&gt;<a name="line.793"></a>
+<FONT color="green">794</FONT>       * @param      delta Granularity to apply to the underlying metric.<a name="line.794"></a>
+<FONT color="green">795</FONT>       * @param      max_d   Maximum dimension of Simplex instances we construct.<a name="line.795"></a>
+<FONT color="green">796</FONT>       * @param      R   Maximum R we will use.<a name="line.796"></a>
+<FONT color="green">797</FONT>       * @param      landmarks Indices of points to use as landmarks. The<a name="line.797"></a>
+<FONT color="green">798</FONT>       *                        simplices constructed will use the landmark<a name="line.798"></a>
+<FONT color="green">799</FONT>       *                        indices, rather than the indices into data.<a name="line.799"></a>
+<FONT color="green">800</FONT>       * @param      data   Metric data to use in constructing stream.<a name="line.800"></a>
+<FONT color="green">801</FONT>       *<a name="line.801"></a>
+<FONT color="green">802</FONT>       * @return    A WitnessStream for the given data.<a name="line.802"></a>
+<FONT color="green">803</FONT>       */<a name="line.803"></a>
+<FONT color="green">804</FONT>      public static WitnessStream WitnessStream(double delta, int max_d, double R, <a name="line.804"></a>
+<FONT color="green">805</FONT>                                                int[] landmarks, PointData data) {<a name="line.805"></a>
+<FONT color="green">806</FONT>        return new WitnessStream(delta, max_d, R, landmarks, data);<a name="line.806"></a>
+<FONT color="green">807</FONT>      }<a name="line.807"></a>
+<FONT color="green">808</FONT>    <a name="line.808"></a>
+<FONT color="green">809</FONT>    <a name="line.809"></a>
+<FONT color="green">810</FONT>      /**<a name="line.810"></a>
+<FONT color="green">811</FONT>       * Make a stream of the simplices in a lazy Witness complex for data.<a name="line.811"></a>
+<FONT color="green">812</FONT>       * &lt;p&gt;<a name="line.812"></a>
+<FONT color="green">813</FONT>       * @param      delta Granularity to apply to the underlying metric.<a name="line.813"></a>
+<FONT color="green">814</FONT>       * @param      max_d   Maximum dimension of Simplex instances we construct.<a name="line.814"></a>
+<FONT color="green">815</FONT>       * @param      R   Maximum R we will use.<a name="line.815"></a>
+<FONT color="green">816</FONT>       * @param      nu     See &lt;i&gt;Topological estimation using witness complexes&lt;/i&gt;, above.<a name="line.816"></a>
+<FONT color="green">817</FONT>       * @param      landmarks Indices of points to use as landmarks. The<a name="line.817"></a>
+<FONT color="green">818</FONT>       *                        simplices constructed will use the landmark<a name="line.818"></a>
+<FONT color="green">819</FONT>       *                        indices, rather than the indices into data.<a name="line.819"></a>
+<FONT color="green">820</FONT>       * @param      data   Metric data to use in constructing stream.<a name="line.820"></a>
+<FONT color="green">821</FONT>       *<a name="line.821"></a>
+<FONT color="green">822</FONT>       * @return    A LazyWitnessStream for the given data.<a name="line.822"></a>
+<FONT color="green">823</FONT>       */<a name="line.823"></a>
+<FONT color="green">824</FONT>      public static LazyWitnessStream LazyWitnessStream(double delta, int max_d, <a name="line.824"></a>
+<FONT color="green">825</FONT>                                                        double R, int nu, int[] landmarks, <a name="line.825"></a>
+<FONT color="green">826</FONT>                                                        PointData data) {<a name="line.826"></a>
+<FONT color="green">827</FONT>        return new LazyWitnessStream(delta, max_d, R, nu, landmarks, data);<a name="line.827"></a>
+<FONT color="green">828</FONT>      }<a name="line.828"></a>
+<FONT color="green">829</FONT>    <a name="line.829"></a>
+<FONT color="green">830</FONT>      // Get rid of really short PersistenceInterval.Float instances.<a name="line.830"></a>
+<FONT color="green">831</FONT>      private static PersistenceInterval.Float[] filter_pintervals<a name="line.831"></a>
+<FONT color="green">832</FONT>        (PersistenceInterval.Float[] vec, double delta) {<a name="line.832"></a>
+<FONT color="green">833</FONT>        int return_len = 0;<a name="line.833"></a>
+<FONT color="green">834</FONT>        for (int i = 0; i &lt; vec.length; i++) {<a name="line.834"></a>
+<FONT color="green">835</FONT>          PersistenceInterval.Float p = vec[i];<a name="line.835"></a>
+<FONT color="green">836</FONT>          if (Math.abs(p.start - p.start) &gt; delta)<a name="line.836"></a>
+<FONT color="green">837</FONT>            return_len++;<a name="line.837"></a>
+<FONT color="green">838</FONT>        }<a name="line.838"></a>
+<FONT color="green">839</FONT>        PersistenceInterval.Float[] return_value = <a name="line.839"></a>
+<FONT color="green">840</FONT>          new PersistenceInterval.Float[return_len];<a name="line.840"></a>
+<FONT color="green">841</FONT>        return_len = 0;<a name="line.841"></a>
+<FONT color="green">842</FONT>        for (int i = 0; i &lt; vec.length; i++) {<a name="line.842"></a>
+<FONT color="green">843</FONT>          PersistenceInterval.Float p = vec[i];<a name="line.843"></a>
+<FONT color="green">844</FONT>          if (Math.abs(p.start - p.start) &gt; delta)<a name="line.844"></a>
+<FONT color="green">845</FONT>            return_value[return_len++] = vec[i];<a name="line.845"></a>
+<FONT color="green">846</FONT>        }<a name="line.846"></a>
+<FONT color="green">847</FONT>        return return_value;<a name="line.847"></a>
+<FONT color="green">848</FONT>      }<a name="line.848"></a>
+<FONT color="green">849</FONT>    <a name="line.849"></a>
+<FONT color="green">850</FONT>      /**<a name="line.850"></a>
+<FONT color="green">851</FONT>       * Are two PersistenceInterval.Float[] arguments sufficiently equal?<a name="line.851"></a>
+<FONT color="green">852</FONT>       *<a name="line.852"></a>
+<FONT color="green">853</FONT>       * &lt;p&gt;<a name="line.853"></a>
+<FONT color="green">854</FONT>       * @param      arg1 PersistenceInterval.Float[].<a name="line.854"></a>
+<FONT color="green">855</FONT>       * @param      arg2 PersistenceInterval.Float[].<a name="line.855"></a>
+<FONT color="green">856</FONT>       * @param      delta double<a name="line.856"></a>
+<FONT color="green">857</FONT>       * @return     true if the arguments are equivalent up the precision of the stream and delta.<a name="line.857"></a>
+<FONT color="green">858</FONT>       *<a name="line.858"></a>
+<FONT color="green">859</FONT>       */<a name="line.859"></a>
+<FONT color="green">860</FONT>      public static boolean equalPersistenceIntervals(PersistenceInterval.Float[] arg1, <a name="line.860"></a>
+<FONT color="green">861</FONT>                                                      PersistenceInterval.Float[] arg2, <a name="line.861"></a>
+<FONT color="green">862</FONT>                                                      double delta) {<a name="line.862"></a>
+<FONT color="green">863</FONT>        if (arg1 == arg2)<a name="line.863"></a>
+<FONT color="green">864</FONT>          return true; <a name="line.864"></a>
+<FONT color="green">865</FONT>        else {<a name="line.865"></a>
+<FONT color="green">866</FONT>          arg1 = filter_pintervals(arg1, delta);<a name="line.866"></a>
+<FONT color="green">867</FONT>          arg2 = filter_pintervals(arg2, delta);<a name="line.867"></a>
+<FONT color="green">868</FONT>          if (arg1.length != arg2.length)<a name="line.868"></a>
+<FONT color="green">869</FONT>            return false;<a name="line.869"></a>
+<FONT color="green">870</FONT>          for (int i = 0; i &lt; arg1.length; i++) {<a name="line.870"></a>
+<FONT color="green">871</FONT>            PersistenceInterval.Float p1 = arg1[i];<a name="line.871"></a>
+<FONT color="green">872</FONT>            PersistenceInterval.Float p2 = arg2[i];<a name="line.872"></a>
+<FONT color="green">873</FONT>            if ((Math.abs(p1.start - p2.start) &gt; 1.5 * delta) ||<a name="line.873"></a>
+<FONT color="green">874</FONT>                (Math.abs(p1.end - p2.end) &gt; 1.5 * delta))<a name="line.874"></a>
+<FONT color="green">875</FONT>              return false;<a name="line.875"></a>
+<FONT color="green">876</FONT>          }<a name="line.876"></a>
+<FONT color="green">877</FONT>          return true;<a name="line.877"></a>
+<FONT color="green">878</FONT>        }<a name="line.878"></a>
+<FONT color="green">879</FONT>      }<a name="line.879"></a>
+<FONT color="green">880</FONT>    <a name="line.880"></a>
+<FONT color="green">881</FONT>    <a name="line.881"></a>
+<FONT color="green">882</FONT>      /**<a name="line.882"></a>
+<FONT color="green">883</FONT>       * Entry point to Plex from the java interpreter. <a name="line.883"></a>
+<FONT color="green">884</FONT>       *<a name="line.884"></a>
+<FONT color="green">885</FONT>       * &lt;p&gt; This stub will, when time permits, be turned into something that<a name="line.885"></a>
+<FONT color="green">886</FONT>       * allows users to make some non-trivial use of Plex from the java<a name="line.886"></a>
+<FONT color="green">887</FONT>       * launcher.  <a name="line.887"></a>
+<FONT color="green">888</FONT>       * &lt;p&gt;<a name="line.888"></a>
+<FONT color="green">889</FONT>       *<a name="line.889"></a>
+<FONT color="green">890</FONT>       * @param      args   Strings that will need to be parsed.<a name="line.890"></a>
+<FONT color="green">891</FONT>       *<a name="line.891"></a>
+<FONT color="green">892</FONT>       */<a name="line.892"></a>
+<FONT color="green">893</FONT>      public static void main(String[] args) {<a name="line.893"></a>
+<FONT color="green">894</FONT>        SimplexStream stream = TmpStream.PaperTestCase();<a name="line.894"></a>
+<FONT color="green">895</FONT>        Persistence P = new Persistence();<a name="line.895"></a>
+<FONT color="green">896</FONT>        PersistenceInterval[] intervals = P.computeIntervals(stream);<a name="line.896"></a>
+<FONT color="green">897</FONT>        for (PersistenceInterval i : intervals) {<a name="line.897"></a>
+<FONT color="green">898</FONT>          System.out.printf("%s\n", i.toString());<a name="line.898"></a>
+<FONT color="green">899</FONT>        }<a name="line.899"></a>
+<FONT color="green">900</FONT>      }<a name="line.900"></a>
+<FONT color="green">901</FONT>    }<a name="line.901"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

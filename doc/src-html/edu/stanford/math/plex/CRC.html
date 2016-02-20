@@ -1,0 +1,894 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    // <a name="line.1"></a>
+<FONT color="green">002</FONT>    //  CRC.java<a name="line.2"></a>
+<FONT color="green">003</FONT>    // <a name="line.3"></a>
+<FONT color="green">004</FONT>    //  ***************************************************************************<a name="line.4"></a>
+<FONT color="green">005</FONT>    // <a name="line.5"></a>
+<FONT color="green">006</FONT>    //  Copyright 2007, Stanford University<a name="line.6"></a>
+<FONT color="green">007</FONT>    // <a name="line.7"></a>
+<FONT color="green">008</FONT>    //  Permission to use, copy, modify, and distribute this software and its<a name="line.8"></a>
+<FONT color="green">009</FONT>    //  documentation for any purpose and without fee is hereby granted,<a name="line.9"></a>
+<FONT color="green">010</FONT>    //  provided that the above copyright notice appear in all copies and that<a name="line.10"></a>
+<FONT color="green">011</FONT>    //  both that copyright notice and this permission notice appear in<a name="line.11"></a>
+<FONT color="green">012</FONT>    //  supporting documentation, and that the name of Stanford University not<a name="line.12"></a>
+<FONT color="green">013</FONT>    //  be used in advertising or publicity pertaining to distribution of the<a name="line.13"></a>
+<FONT color="green">014</FONT>    //  software without specific, written prior permission.  Stanford<a name="line.14"></a>
+<FONT color="green">015</FONT>    //  University makes no representations about the suitability of this<a name="line.15"></a>
+<FONT color="green">016</FONT>    //  software for any purpose.  It is provided "as is" without express or<a name="line.16"></a>
+<FONT color="green">017</FONT>    //  implied warranty.<a name="line.17"></a>
+<FONT color="green">018</FONT>    // <a name="line.18"></a>
+<FONT color="green">019</FONT>    //  ***************************************************************************<a name="line.19"></a>
+<FONT color="green">020</FONT>    // <a name="line.20"></a>
+<FONT color="green">021</FONT>    //  CRC hash functions for various types of integer and string data. <a name="line.21"></a>
+<FONT color="green">022</FONT>    // <a name="line.22"></a>
+<FONT color="green">023</FONT>    //  $Id: CRC.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.23"></a>
+<FONT color="green">024</FONT>    // <a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>    package edu.stanford.math.plex;<a name="line.26"></a>
+<FONT color="green">027</FONT>    <a name="line.27"></a>
+<FONT color="green">028</FONT>    /**<a name="line.28"></a>
+<FONT color="green">029</FONT>     * The &lt;code&gt;CRC&lt;/code&gt; class provides good hash methods for int/long and string data.<a name="line.29"></a>
+<FONT color="green">030</FONT>     *<a name="line.30"></a>
+<FONT color="green">031</FONT>     * @version $Id: CRC.java,v 1.1.1.1 2008/09/12 01:53:25 hsexton Exp $<a name="line.31"></a>
+<FONT color="green">032</FONT>     */<a name="line.32"></a>
+<FONT color="green">033</FONT>    public final class CRC {<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>      private CRC() {<a name="line.35"></a>
+<FONT color="green">036</FONT>        // no instances<a name="line.36"></a>
+<FONT color="green">037</FONT>      }<a name="line.37"></a>
+<FONT color="green">038</FONT>    <a name="line.38"></a>
+<FONT color="green">039</FONT>      // CRC Hashing Explained:<a name="line.39"></a>
+<FONT color="green">040</FONT>      //<a name="line.40"></a>
+<FONT color="green">041</FONT>      // The underlying idea here is that the string (or whatever) being<a name="line.41"></a>
+<FONT color="green">042</FONT>      // hashed is regarded as being a polynomial in Z/2[X].  (This is<a name="line.42"></a>
+<FONT color="green">043</FONT>      // trivial, but in case it isn't obvious, you can identify an array of<a name="line.43"></a>
+<FONT color="green">044</FONT>      // length N of bytes with the integer formed by summing the terms<a name="line.44"></a>
+<FONT color="green">045</FONT>      // (byte[i]*(8**(N - (1+i)))) -- in other words, look at the entire<a name="line.45"></a>
+<FONT color="green">046</FONT>      // array of bytes as one giant bitfield, with the "significance" of the<a name="line.46"></a>
+<FONT color="green">047</FONT>      // bits decreasing as you move from left to right.  Then, you can<a name="line.47"></a>
+<FONT color="green">048</FONT>      // identify an integer I with p(x) in Z/2[X] such that the coefficient<a name="line.48"></a>
+<FONT color="green">049</FONT>      // of X**k is non-zero iff the LOGICAL_AND (2**k, I) is non-zero.)<a name="line.49"></a>
+<FONT color="green">050</FONT>      // <a name="line.50"></a>
+<FONT color="green">051</FONT>      // The trick is to pick some polynomial M(x), and take as the hash<a name="line.51"></a>
+<FONT color="green">052</FONT>      // value for the string the remainder of the string modulo M(x).<a name="line.52"></a>
+<FONT color="green">053</FONT>      // Clearly, in order for the strings to hash to more possible values,<a name="line.53"></a>
+<FONT color="green">054</FONT>      // the degree of M should be as large as feasible. In order to make the<a name="line.54"></a>
+<FONT color="green">055</FONT>      // make the hash values "more random" for short strings, we "multiply"<a name="line.55"></a>
+<FONT color="green">056</FONT>      // the string by some power of X. To make this more concrete, let M be<a name="line.56"></a>
+<FONT color="green">057</FONT>      // a polynomial of degree 32, and shift the strings 32bits (multiply by<a name="line.57"></a>
+<FONT color="green">058</FONT>      // X**32). In other words, define the hash value of a byte array to be<a name="line.58"></a>
+<FONT color="green">059</FONT>      // the remainder, modulo M(x), of the new array constructed by<a name="line.59"></a>
+<FONT color="green">060</FONT>      // appending 4 null bytes. What was not instantly obvious to me is that<a name="line.60"></a>
+<FONT color="green">061</FONT>      // this calculation can be done, by using a table, examining the string<a name="line.61"></a>
+<FONT color="green">062</FONT>      // a byte at a time. Here's how this works:<a name="line.62"></a>
+<FONT color="green">063</FONT>      // <a name="line.63"></a>
+<FONT color="green">064</FONT>      // Let string = [Byte0][Byte1][Byte2][Byte3][Byte4][Byte5]....<a name="line.64"></a>
+<FONT color="green">065</FONT>      // <a name="line.65"></a>
+<FONT color="green">066</FONT>      // and M(x)   = 1[byte0][byte1][byte2][byte3]<a name="line.66"></a>
+<FONT color="green">067</FONT>      // <a name="line.67"></a>
+<FONT color="green">068</FONT>      // Now, string is equal to<a name="line.68"></a>
+<FONT color="green">069</FONT>      // <a name="line.69"></a>
+<FONT color="green">070</FONT>      // string = [00000][Byte1][Byte2][Byte3][Byte4][Byte5]....<a name="line.70"></a>
+<FONT color="green">071</FONT>      // +[Byte0]...all zeros....<a name="line.71"></a>
+<FONT color="green">072</FONT>      // <a name="line.72"></a>
+<FONT color="green">073</FONT>      // and this has the same remainder as<a name="line.73"></a>
+<FONT color="green">074</FONT>      // <a name="line.74"></a>
+<FONT color="green">075</FONT>      // string1 = [00000][Byte1][Byte2][Byte3][Byte4][Byte5]....<a name="line.75"></a>
+<FONT color="green">076</FONT>      // +[00000][rem-0][rem-1][rem-2][rem-4]....all zeros...<a name="line.76"></a>
+<FONT color="green">077</FONT>      // <a name="line.77"></a>
+<FONT color="green">078</FONT>      // where the bytes rem-i are the bytes of the remainder of<a name="line.78"></a>
+<FONT color="green">079</FONT>      // [Byte0][00000][00000][00000][00000] when divided by M(x). (This may<a name="line.79"></a>
+<FONT color="green">080</FONT>      // need some thinking about, but it is straightforward once you<a name="line.80"></a>
+<FONT color="green">081</FONT>      // remember that the remainder is computed by successively XORing<a name="line.81"></a>
+<FONT color="green">082</FONT>      // shifts of M(x) so that the leading bit of M(x) cancels the<a name="line.82"></a>
+<FONT color="green">083</FONT>      // appropriate bit of the polynomial we are dividing -- this means that<a name="line.83"></a>
+<FONT color="green">084</FONT>      // any bits more than 4 bytes from the "last cancelled bit", that is,<a name="line.84"></a>
+<FONT color="green">085</FONT>      // bits in [Byte5] and beyond are unaffected.)<a name="line.85"></a>
+<FONT color="green">086</FONT>      // <a name="line.86"></a>
+<FONT color="green">087</FONT>      // That means that the remainder of string is the same as the remainder of<a name="line.87"></a>
+<FONT color="green">088</FONT>      // <a name="line.88"></a>
+<FONT color="green">089</FONT>      // string1 = [Byte1][Byte2][Byte3][Byte4][Byte5]....<a name="line.89"></a>
+<FONT color="green">090</FONT>      // +[rem-0][rem-1][rem-2][rem-4]....all zeros...<a name="line.90"></a>
+<FONT color="green">091</FONT>      // <a name="line.91"></a>
+<FONT color="green">092</FONT>      // or string1 = [Btr_1][Btr_2][Btr_3][Btr_4][Btr_5]....<a name="line.92"></a>
+<FONT color="green">093</FONT>      // <a name="line.93"></a>
+<FONT color="green">094</FONT>      // where Btr_i = rem-i XOR Bytei, for i &lt;= 4, and Bytei for i &gt; 4.<a name="line.94"></a>
+<FONT color="green">095</FONT>      // <a name="line.95"></a>
+<FONT color="green">096</FONT>      // <a name="line.96"></a>
+<FONT color="green">097</FONT>      // In other words, for a given string, we process the first byte by<a name="line.97"></a>
+<FONT color="green">098</FONT>      // taking the 32bit remainder of that "shifted" byte (and since there<a name="line.98"></a>
+<FONT color="green">099</FONT>      // are only 256 of these bytes, we can compute these remainders and<a name="line.99"></a>
+<FONT color="green">100</FONT>      // keep them in a table), and then XOR that remainder word with the<a name="line.100"></a>
+<FONT color="green">101</FONT>      // succeeding 4 bytes in the string. Further, since XOR is associative<a name="line.101"></a>
+<FONT color="green">102</FONT>      // and commutative, we can just keep that remainder in an accumulator,<a name="line.102"></a>
+<FONT color="green">103</FONT>      // and do the XORing "virtually".<a name="line.103"></a>
+<FONT color="green">104</FONT>      // <a name="line.104"></a>
+<FONT color="green">105</FONT>      // To see this, consider the next step in the hashing:<a name="line.105"></a>
+<FONT color="green">106</FONT>      // <a name="line.106"></a>
+<FONT color="green">107</FONT>      // string1 = [Byte1][Byte2][Byte3][Byte4][Byte5]....<a name="line.107"></a>
+<FONT color="green">108</FONT>      // +[rem-0][rem-1][rem-2][rem-4]....all zeros...<a name="line.108"></a>
+<FONT color="green">109</FONT>      // <a name="line.109"></a>
+<FONT color="green">110</FONT>      // has the same remainder as<a name="line.110"></a>
+<FONT color="green">111</FONT>      // <a name="line.111"></a>
+<FONT color="green">112</FONT>      // string2 = [Byte2][Byte3][Byte4][Byte5]....<a name="line.112"></a>
+<FONT color="green">113</FONT>      // +[rem-1][rem-2][rem-4]....all zeros...<a name="line.113"></a>
+<FONT color="green">114</FONT>      // +[rem21][rem22][rem21][rem22]<a name="line.114"></a>
+<FONT color="green">115</FONT>      // <a name="line.115"></a>
+<FONT color="green">116</FONT>      // where [rem2i] is the remainder of [Byte1 ^ rem-0][0][0][0][0].<a name="line.116"></a>
+<FONT color="green">117</FONT>      // <a name="line.117"></a>
+<FONT color="green">118</FONT>      // This, in turn is equal to<a name="line.118"></a>
+<FONT color="green">119</FONT>      // <a name="line.119"></a>
+<FONT color="green">120</FONT>      // string2 = [Byte2][Byte3][Byte4][Byte5]....<a name="line.120"></a>
+<FONT color="green">121</FONT>      // +[rem2-0][rem2-1][rem2-3][rem2-4]....all zeros...<a name="line.121"></a>
+<FONT color="green">122</FONT>      // <a name="line.122"></a>
+<FONT color="green">123</FONT>      // where the rem2-i are the bytes of ((first-rem) &lt;&lt; BITS_PER_BYTE) XOR<a name="line.123"></a>
+<FONT color="green">124</FONT>      // (second-rem).  In other words, the algorithm is to start with<a name="line.124"></a>
+<FONT color="green">125</FONT>      // ACCUMULATOR = 0, and looping through each i in the byte array,<a name="line.125"></a>
+<FONT color="green">126</FONT>      // <a name="line.126"></a>
+<FONT color="green">127</FONT>      // table_index = byte[i] ^ (ACCUMULATOR&gt;&gt; (BITS_PER_ULONG - BITS_PER_BYTE));<a name="line.127"></a>
+<FONT color="green">128</FONT>      // ACCUMULATOR = (ACCUMULATOR &lt;&lt; BITS_PER_BYTE) ^ REMAINDER_TABLE[table_index];<a name="line.128"></a>
+<FONT color="green">129</FONT>      // <a name="line.129"></a>
+<FONT color="green">130</FONT>      // Now, looking at this code, we see we can eliminate one shift and replace<a name="line.130"></a>
+<FONT color="green">131</FONT>      // it by a logical and, if we make an alteration. Let the contents of<a name="line.131"></a>
+<FONT color="green">132</FONT>      // REMAINDER_TABLE be byte-reversed (that is, the bytes are present, but<a name="line.132"></a>
+<FONT color="green">133</FONT>      // byte[i] is switched with byte[3-i]). Then, start with REV_ACCUMULATOR =<a name="line.133"></a>
+<FONT color="green">134</FONT>      // 0; and loop through each i,<a name="line.134"></a>
+<FONT color="green">135</FONT>      // <a name="line.135"></a>
+<FONT color="green">136</FONT>      // table_index = byte[i] ^ (REV_ACCUMULATOR &amp;&amp; 0xff);<a name="line.136"></a>
+<FONT color="green">137</FONT>      // ACCUMULATOR = (REV_ACCUMULATOR &gt;&gt; 8) ^ REV_REMAINDER_TABLE[table_index];<a name="line.137"></a>
+<FONT color="green">138</FONT>      // <a name="line.138"></a>
+<FONT color="green">139</FONT>      // Now, whether this is better or not is somewhat unclear -- there is<a name="line.139"></a>
+<FONT color="green">140</FONT>      // no perceptible difference on a Sun4, and I doubt that there is on<a name="line.140"></a>
+<FONT color="green">141</FONT>      // any RISC machine, although I suppose some CISC machines might<a name="line.141"></a>
+<FONT color="green">142</FONT>      // magically do something to do the first line just above in a single<a name="line.142"></a>
+<FONT color="green">143</FONT>      // instruction.<a name="line.143"></a>
+<FONT color="green">144</FONT>      // <a name="line.144"></a>
+<FONT color="green">145</FONT>      // This thing is a linear code, and I seem to recall that it is clear<a name="line.145"></a>
+<FONT color="green">146</FONT>      // (during the short time that one remembers the details) that the<a name="line.146"></a>
+<FONT color="green">147</FONT>      // polynomial should be prime. In fact, if you choose one with the<a name="line.147"></a>
+<FONT color="green">148</FONT>      // correct roots, you can guarantee that nothing in the kernel of the<a name="line.148"></a>
+<FONT color="green">149</FONT>      // linear map is of degree &lt;= K (excluding 0, of course) for some K<a name="line.149"></a>
+<FONT color="green">150</FONT>      // that's bigger than you think... The reference for this code, a paper<a name="line.150"></a>
+<FONT color="green">151</FONT>      // which is much less clear than this comment and has a lot of<a name="line.151"></a>
+<FONT color="green">152</FONT>      // extraneous junk and no theory in it, is: Aram Perez, IEEE Micro,<a name="line.152"></a>
+<FONT color="green">153</FONT>      // June 1983, pp.  40-50.  Knuth has a short reference that is better,<a name="line.153"></a>
+<FONT color="green">154</FONT>      // but doesn't explain how to use a table to speed up the calculation.<a name="line.154"></a>
+<FONT color="green">155</FONT>      // Finally, the table is made from the 33bit number 0x1e4725ca3, which<a name="line.155"></a>
+<FONT color="green">156</FONT>      // is a prime polynomial of degree 32.<a name="line.156"></a>
+<FONT color="green">157</FONT>      // <a name="line.157"></a>
+<FONT color="green">158</FONT>      // A moment's reflection will convince you that this same argument<a name="line.158"></a>
+<FONT color="green">159</FONT>      // applies to any prime of degree B*n (where B is the number of bits in<a name="line.159"></a>
+<FONT color="green">160</FONT>      // a byte).  The question is how to apply this method when you want to<a name="line.160"></a>
+<FONT color="green">161</FONT>      // use a polynomial Q(x) of degree, say, 29. The answer is simple. Make<a name="line.161"></a>
+<FONT color="green">162</FONT>      // a table as above, and apply the same algorithm. You will get a<a name="line.162"></a>
+<FONT color="green">163</FONT>      // "remainder" which is of degree 31 -- this is a polynomial that has<a name="line.163"></a>
+<FONT color="green">164</FONT>      // the same remainder modulo Q(x) as the original value, so all that is<a name="line.164"></a>
+<FONT color="green">165</FONT>      // necessary is to compute the remainders of possible polynomials of<a name="line.165"></a>
+<FONT color="green">166</FONT>      // the form:<a name="line.166"></a>
+<FONT color="green">167</FONT>      // <a name="line.167"></a>
+<FONT color="green">168</FONT>      // [Byte][0][0][0] <a name="line.168"></a>
+<FONT color="green">169</FONT>      // <a name="line.169"></a>
+<FONT color="green">170</FONT>      // modulo Q(x). That is, you need a second ("dregs") table of the same<a name="line.170"></a>
+<FONT color="green">171</FONT>      // size mas the first, and you have to apply the iterative step of the<a name="line.171"></a>
+<FONT color="green">172</FONT>      // algorithm one last time using the dregs table.<a name="line.172"></a>
+<FONT color="green">173</FONT>    <a name="line.173"></a>
+<FONT color="green">174</FONT>    <a name="line.174"></a>
+<FONT color="green">175</FONT>      /**<a name="line.175"></a>
+<FONT color="green">176</FONT>       * Internal table used by CRC code.<a name="line.176"></a>
+<FONT color="green">177</FONT>       */<a name="line.177"></a>
+<FONT color="green">178</FONT>    <a name="line.178"></a>
+<FONT color="green">179</FONT>      // This table is made from the 65bit number 0x1000000000000001b,<a name="line.179"></a>
+<FONT color="green">180</FONT>      // considered as a prime polynomial of degree 64. The polynomial x64 +<a name="line.180"></a>
+<FONT color="green">181</FONT>      // x4 + x3 + x + 1 (as described in ISO 3309) is prime, and presumably<a name="line.181"></a>
+<FONT color="green">182</FONT>      // the advantage that the entries in the table are smaller is one of<a name="line.182"></a>
+<FONT color="green">183</FONT>      // the reasons that it was chosen. We also have a table below made from<a name="line.183"></a>
+<FONT color="green">184</FONT>      // a prime with a lot more bits in it.<a name="line.184"></a>
+<FONT color="green">185</FONT>      private static final long[] hash64tab0 = new long[]<a name="line.185"></a>
+<FONT color="green">186</FONT>        { 0x000L, 0x01bL, 0x036L, 0x02dL, 0x06cL, 0x077L, <a name="line.186"></a>
+<FONT color="green">187</FONT>          0x05aL, 0x041L, 0x0d8L, 0x0c3L, 0x0eeL, 0x0f5L, <a name="line.187"></a>
+<FONT color="green">188</FONT>          0x0b4L, 0x0afL, 0x082L, 0x099L, 0x1b0L, 0x1abL, <a name="line.188"></a>
+<FONT color="green">189</FONT>          0x186L, 0x19dL, 0x1dcL, 0x1c7L, 0x1eaL, 0x1f1L, <a name="line.189"></a>
+<FONT color="green">190</FONT>          0x168L, 0x173L, 0x15eL, 0x145L, 0x104L, 0x11fL, <a name="line.190"></a>
+<FONT color="green">191</FONT>          0x132L, 0x129L, 0x360L, 0x37bL, 0x356L, 0x34dL, <a name="line.191"></a>
+<FONT color="green">192</FONT>          0x30cL, 0x317L, 0x33aL, 0x321L, 0x3b8L, 0x3a3L, <a name="line.192"></a>
+<FONT color="green">193</FONT>          0x38eL, 0x395L, 0x3d4L, 0x3cfL, 0x3e2L, 0x3f9L, <a name="line.193"></a>
+<FONT color="green">194</FONT>          0x2d0L, 0x2cbL, 0x2e6L, 0x2fdL, 0x2bcL, 0x2a7L, <a name="line.194"></a>
+<FONT color="green">195</FONT>          0x28aL, 0x291L, 0x208L, 0x213L, 0x23eL, 0x225L, <a name="line.195"></a>
+<FONT color="green">196</FONT>          0x264L, 0x27fL, 0x252L, 0x249L, 0x6c0L, 0x6dbL, <a name="line.196"></a>
+<FONT color="green">197</FONT>          0x6f6L, 0x6edL, 0x6acL, 0x6b7L, 0x69aL, 0x681L, <a name="line.197"></a>
+<FONT color="green">198</FONT>          0x618L, 0x603L, 0x62eL, 0x635L, 0x674L, 0x66fL, <a name="line.198"></a>
+<FONT color="green">199</FONT>          0x642L, 0x659L, 0x770L, 0x76bL, 0x746L, 0x75dL, <a name="line.199"></a>
+<FONT color="green">200</FONT>          0x71cL, 0x707L, 0x72aL, 0x731L, 0x7a8L, 0x7b3L, <a name="line.200"></a>
+<FONT color="green">201</FONT>          0x79eL, 0x785L, 0x7c4L, 0x7dfL, 0x7f2L, 0x7e9L, <a name="line.201"></a>
+<FONT color="green">202</FONT>          0x5a0L, 0x5bbL, 0x596L, 0x58dL, 0x5ccL, 0x5d7L, <a name="line.202"></a>
+<FONT color="green">203</FONT>          0x5faL, 0x5e1L, 0x578L, 0x563L, 0x54eL, 0x555L, <a name="line.203"></a>
+<FONT color="green">204</FONT>          0x514L, 0x50fL, 0x522L, 0x539L, 0x410L, 0x40bL, <a name="line.204"></a>
+<FONT color="green">205</FONT>          0x426L, 0x43dL, 0x47cL, 0x467L, 0x44aL, 0x451L, <a name="line.205"></a>
+<FONT color="green">206</FONT>          0x4c8L, 0x4d3L, 0x4feL, 0x4e5L, 0x4a4L, 0x4bfL, <a name="line.206"></a>
+<FONT color="green">207</FONT>          0x492L, 0x489L, 0xd80L, 0xd9bL, 0xdb6L, 0xdadL, <a name="line.207"></a>
+<FONT color="green">208</FONT>          0xdecL, 0xdf7L, 0xddaL, 0xdc1L, 0xd58L, 0xd43L, <a name="line.208"></a>
+<FONT color="green">209</FONT>          0xd6eL, 0xd75L, 0xd34L, 0xd2fL, 0xd02L, 0xd19L, <a name="line.209"></a>
+<FONT color="green">210</FONT>          0xc30L, 0xc2bL, 0xc06L, 0xc1dL, 0xc5cL, 0xc47L, <a name="line.210"></a>
+<FONT color="green">211</FONT>          0xc6aL, 0xc71L, 0xce8L, 0xcf3L, 0xcdeL, 0xcc5L, <a name="line.211"></a>
+<FONT color="green">212</FONT>          0xc84L, 0xc9fL, 0xcb2L, 0xca9L, 0xee0L, 0xefbL, <a name="line.212"></a>
+<FONT color="green">213</FONT>          0xed6L, 0xecdL, 0xe8cL, 0xe97L, 0xebaL, 0xea1L, <a name="line.213"></a>
+<FONT color="green">214</FONT>          0xe38L, 0xe23L, 0xe0eL, 0xe15L, 0xe54L, 0xe4fL, <a name="line.214"></a>
+<FONT color="green">215</FONT>          0xe62L, 0xe79L, 0xf50L, 0xf4bL, 0xf66L, 0xf7dL, <a name="line.215"></a>
+<FONT color="green">216</FONT>          0xf3cL, 0xf27L, 0xf0aL, 0xf11L, 0xf88L, 0xf93L, <a name="line.216"></a>
+<FONT color="green">217</FONT>          0xfbeL, 0xfa5L, 0xfe4L, 0xfffL, 0xfd2L, 0xfc9L, <a name="line.217"></a>
+<FONT color="green">218</FONT>          0xb40L, 0xb5bL, 0xb76L, 0xb6dL, 0xb2cL, 0xb37L, <a name="line.218"></a>
+<FONT color="green">219</FONT>          0xb1aL, 0xb01L, 0xb98L, 0xb83L, 0xbaeL, 0xbb5L, <a name="line.219"></a>
+<FONT color="green">220</FONT>          0xbf4L, 0xbefL, 0xbc2L, 0xbd9L, 0xaf0L, 0xaebL, <a name="line.220"></a>
+<FONT color="green">221</FONT>          0xac6L, 0xaddL, 0xa9cL, 0xa87L, 0xaaaL, 0xab1L, <a name="line.221"></a>
+<FONT color="green">222</FONT>          0xa28L, 0xa33L, 0xa1eL, 0xa05L, 0xa44L, 0xa5fL, <a name="line.222"></a>
+<FONT color="green">223</FONT>          0xa72L, 0xa69L, 0x820L, 0x83bL, 0x816L, 0x80dL, <a name="line.223"></a>
+<FONT color="green">224</FONT>          0x84cL, 0x857L, 0x87aL, 0x861L, 0x8f8L, 0x8e3L, <a name="line.224"></a>
+<FONT color="green">225</FONT>          0x8ceL, 0x8d5L, 0x894L, 0x88fL, 0x8a2L, 0x8b9L, <a name="line.225"></a>
+<FONT color="green">226</FONT>          0x990L, 0x98bL, 0x9a6L, 0x9bdL, 0x9fcL, 0x9e7L, <a name="line.226"></a>
+<FONT color="green">227</FONT>          0x9caL, 0x9d1L, 0x948L, 0x953L, 0x97eL, 0x965L, <a name="line.227"></a>
+<FONT color="green">228</FONT>          0x924L, 0x93fL, 0x912L, 0x909L };<a name="line.228"></a>
+<FONT color="green">229</FONT>    <a name="line.229"></a>
+<FONT color="green">230</FONT>      /**<a name="line.230"></a>
+<FONT color="green">231</FONT>       * Internal table used by CRC code.<a name="line.231"></a>
+<FONT color="green">232</FONT>       */<a name="line.232"></a>
+<FONT color="green">233</FONT>    <a name="line.233"></a>
+<FONT color="green">234</FONT>      // This table is made from the 65bit number 0x1dbf5da0ff9e2a9e3,<a name="line.234"></a>
+<FONT color="green">235</FONT>      // considered as a prime polynomial of degree 64. */<a name="line.235"></a>
+<FONT color="green">236</FONT>      private static final long[] hash64tab1 = new long[]<a name="line.236"></a>
+<FONT color="green">237</FONT>        { 0x0000000000000000L, 0xdbf5da0ff9e2a9e3L, 0x6c1e6e100a27fa25L, <a name="line.237"></a>
+<FONT color="green">238</FONT>          0xb7ebb41ff3c553c6L, 0xd83cdc20144ff44aL, 0x03c9062fedad5da9L, <a name="line.238"></a>
+<FONT color="green">239</FONT>          0xb422b2301e680e6fL, 0x6fd7683fe78aa78cL, 0x6b8c624fd17d4177L,<a name="line.239"></a>
+<FONT color="green">240</FONT>          0xb079b840289fe894L, 0x07920c5fdb5abb52L, 0xdc67d65022b812b1L, <a name="line.240"></a>
+<FONT color="green">241</FONT>          0xb3b0be6fc532b53dL, 0x684564603cd01cdeL, 0xdfaed07fcf154f18L,<a name="line.241"></a>
+<FONT color="green">242</FONT>          0x045b0a7036f7e6fbL, 0xd718c49fa2fa82eeL, 0x0ced1e905b182b0dL,<a name="line.242"></a>
+<FONT color="green">243</FONT>          0xbb06aa8fa8dd78cbL, 0x60f37080513fd128L, 0x0f2418bfb6b576a4L, <a name="line.243"></a>
+<FONT color="green">244</FONT>          0xd4d1c2b04f57df47L, 0x633a76afbc928c81L, 0xb8cfaca045702562L, <a name="line.244"></a>
+<FONT color="green">245</FONT>          0xbc94a6d07387c399L, 0x67617cdf8a656a7aL, 0xd08ac8c079a039bcL,<a name="line.245"></a>
+<FONT color="green">246</FONT>          0x0b7f12cf8042905fL, 0x64a87af067c837d3L, 0xbf5da0ff9e2a9e30L,<a name="line.246"></a>
+<FONT color="green">247</FONT>          0x08b614e06defcdf6L, 0xd343ceef940d6415L, 0x75c45330bc17ac3fL, <a name="line.247"></a>
+<FONT color="green">248</FONT>          0xae31893f45f505dcL, 0x19da3d20b630561aL, 0xc22fe72f4fd2fff9L, <a name="line.248"></a>
+<FONT color="green">249</FONT>          0xadf88f10a8585875L, 0x760d551f51baf196L, 0xc1e6e100a27fa250L,<a name="line.249"></a>
+<FONT color="green">250</FONT>          0x1a133b0f5b9d0bb3L, 0x1e48317f6d6aed48L, 0xc5bdeb70948844abL,<a name="line.250"></a>
+<FONT color="green">251</FONT>          0x72565f6f674d176dL, 0xa9a385609eafbe8eL, 0xc674ed5f79251902L, <a name="line.251"></a>
+<FONT color="green">252</FONT>          0x1d81375080c7b0e1L, 0xaa6a834f7302e327L, 0x719f59408ae04ac4L, <a name="line.252"></a>
+<FONT color="green">253</FONT>          0xa2dc97af1eed2ed1L, 0x79294da0e70f8732L, 0xcec2f9bf14cad4f4L,<a name="line.253"></a>
+<FONT color="green">254</FONT>          0x153723b0ed287d17L, 0x7ae04b8f0aa2da9bL, 0xa1159180f3407378L,<a name="line.254"></a>
+<FONT color="green">255</FONT>          0x16fe259f008520beL, 0xcd0bff90f967895dL, 0xc950f5e0cf906fa6L, <a name="line.255"></a>
+<FONT color="green">256</FONT>          0x12a52fef3672c645L, 0xa54e9bf0c5b79583L, 0x7ebb41ff3c553c60L, <a name="line.256"></a>
+<FONT color="green">257</FONT>          0x116c29c0dbdf9becL, 0xca99f3cf223d320fL, 0x7d7247d0d1f861c9L,<a name="line.257"></a>
+<FONT color="green">258</FONT>          0xa6879ddf281ac82aL, 0xeb88a661782f587eL, 0x307d7c6e81cdf19dL,<a name="line.258"></a>
+<FONT color="green">259</FONT>          0x8796c8717208a25bL, 0x5c63127e8bea0bb8L, 0x33b47a416c60ac34L, <a name="line.259"></a>
+<FONT color="green">260</FONT>          0xe841a04e958205d7L, 0x5faa145166475611L, 0x845fce5e9fa5fff2L, <a name="line.260"></a>
+<FONT color="green">261</FONT>          0x8004c42ea9521909L, 0x5bf11e2150b0b0eaL, 0xec1aaa3ea375e32cL,<a name="line.261"></a>
+<FONT color="green">262</FONT>          0x37ef70315a974acfL, 0x5838180ebd1ded43L, 0x83cdc20144ff44a0L,<a name="line.262"></a>
+<FONT color="green">263</FONT>          0x3426761eb73a1766L, 0xefd3ac114ed8be85L, 0x3c9062fedad5da90L, <a name="line.263"></a>
+<FONT color="green">264</FONT>          0xe765b8f123377373L, 0x508e0ceed0f220b5L, 0x8b7bd6e129108956L, <a name="line.264"></a>
+<FONT color="green">265</FONT>          0xe4acbedece9a2edaL, 0x3f5964d137788739L, 0x88b2d0cec4bdd4ffL,<a name="line.265"></a>
+<FONT color="green">266</FONT>          0x53470ac13d5f7d1cL, 0x571c00b10ba89be7L, 0x8ce9dabef24a3204L,<a name="line.266"></a>
+<FONT color="green">267</FONT>          0x3b026ea1018f61c2L, 0xe0f7b4aef86dc821L, 0x8f20dc911fe76fadL, <a name="line.267"></a>
+<FONT color="green">268</FONT>          0x54d5069ee605c64eL, 0xe33eb28115c09588L, 0x38cb688eec223c6bL, <a name="line.268"></a>
+<FONT color="green">269</FONT>          0x9e4cf551c438f441L, 0x45b92f5e3dda5da2L, 0xf2529b41ce1f0e64L,<a name="line.269"></a>
+<FONT color="green">270</FONT>          0x29a7414e37fda787L, 0x46702971d077000bL, 0x9d85f37e2995a9e8L,<a name="line.270"></a>
+<FONT color="green">271</FONT>          0x2a6e4761da50fa2eL, 0xf19b9d6e23b253cdL, 0xf5c0971e1545b536L, <a name="line.271"></a>
+<FONT color="green">272</FONT>          0x2e354d11eca71cd5L, 0x99def90e1f624f13L, 0x422b2301e680e6f0L, <a name="line.272"></a>
+<FONT color="green">273</FONT>          0x2dfc4b3e010a417cL, 0xf6099131f8e8e89fL, 0x41e2252e0b2dbb59L,<a name="line.273"></a>
+<FONT color="green">274</FONT>          0x9a17ff21f2cf12baL, 0x495431ce66c276afL, 0x92a1ebc19f20df4cL,<a name="line.274"></a>
+<FONT color="green">275</FONT>          0x254a5fde6ce58c8aL, 0xfebf85d195072569L, 0x9168edee728d82e5L, <a name="line.275"></a>
+<FONT color="green">276</FONT>          0x4a9d37e18b6f2b06L, 0xfd7683fe78aa78c0L, 0x268359f18148d123L, <a name="line.276"></a>
+<FONT color="green">277</FONT>          0x22d85381b7bf37d8L, 0xf92d898e4e5d9e3bL, 0x4ec63d91bd98cdfdL,<a name="line.277"></a>
+<FONT color="green">278</FONT>          0x9533e79e447a641eL, 0xfae48fa1a3f0c392L, 0x211155ae5a126a71L,<a name="line.278"></a>
+<FONT color="green">279</FONT>          0x96fae1b1a9d739b7L, 0x4d0f3bbe50359054L, 0x0ce496cd09bc191fL, <a name="line.279"></a>
+<FONT color="green">280</FONT>          0xd7114cc2f05eb0fcL, 0x60faf8dd039be33aL, 0xbb0f22d2fa794ad9L, <a name="line.280"></a>
+<FONT color="green">281</FONT>          0xd4d84aed1df3ed55L, 0x0f2d90e2e41144b6L, 0xb8c624fd17d41770L,<a name="line.281"></a>
+<FONT color="green">282</FONT>          0x6333fef2ee36be93L, 0x6768f482d8c15868L, 0xbc9d2e8d2123f18bL,<a name="line.282"></a>
+<FONT color="green">283</FONT>          0x0b769a92d2e6a24dL, 0xd083409d2b040baeL, 0xbf5428a2cc8eac22L, <a name="line.283"></a>
+<FONT color="green">284</FONT>          0x64a1f2ad356c05c1L, 0xd34a46b2c6a95607L, 0x08bf9cbd3f4bffe4L, <a name="line.284"></a>
+<FONT color="green">285</FONT>          0xdbfc5252ab469bf1L, 0x0009885d52a43212L, 0xb7e23c42a16161d4L,<a name="line.285"></a>
+<FONT color="green">286</FONT>          0x6c17e64d5883c837L, 0x03c08e72bf096fbbL, 0xd835547d46ebc658L,<a name="line.286"></a>
+<FONT color="green">287</FONT>          0x6fdee062b52e959eL, 0xb42b3a6d4ccc3c7dL, 0xb070301d7a3bda86L, <a name="line.287"></a>
+<FONT color="green">288</FONT>          0x6b85ea1283d97365L, 0xdc6e5e0d701c20a3L, 0x079b840289fe8940L, <a name="line.288"></a>
+<FONT color="green">289</FONT>          0x684cec3d6e742eccL, 0xb3b936329796872fL, 0x0452822d6453d4e9L,<a name="line.289"></a>
+<FONT color="green">290</FONT>          0xdfa758229db17d0aL, 0x7920c5fdb5abb520L, 0xa2d51ff24c491cc3L,<a name="line.290"></a>
+<FONT color="green">291</FONT>          0x153eabedbf8c4f05L, 0xcecb71e2466ee6e6L, 0xa11c19dda1e4416aL, <a name="line.291"></a>
+<FONT color="green">292</FONT>          0x7ae9c3d25806e889L, 0xcd0277cdabc3bb4fL, 0x16f7adc2522112acL, <a name="line.292"></a>
+<FONT color="green">293</FONT>          0x12aca7b264d6f457L, 0xc9597dbd9d345db4L, 0x7eb2c9a26ef10e72L,<a name="line.293"></a>
+<FONT color="green">294</FONT>          0xa54713ad9713a791L, 0xca907b927099001dL, 0x1165a19d897ba9feL,<a name="line.294"></a>
+<FONT color="green">295</FONT>          0xa68e15827abefa38L, 0x7d7bcf8d835c53dbL, 0xae380162175137ceL, <a name="line.295"></a>
+<FONT color="green">296</FONT>          0x75cddb6deeb39e2dL, 0xc2266f721d76cdebL, 0x19d3b57de4946408L, <a name="line.296"></a>
+<FONT color="green">297</FONT>          0x7604dd42031ec384L, 0xadf1074dfafc6a67L, 0x1a1ab352093939a1L,<a name="line.297"></a>
+<FONT color="green">298</FONT>          0xc1ef695df0db9042L, 0xc5b4632dc62c76b9L, 0x1e41b9223fcedf5aL,<a name="line.298"></a>
+<FONT color="green">299</FONT>          0xa9aa0d3dcc0b8c9cL, 0x725fd73235e9257fL, 0x1d88bf0dd26382f3L, <a name="line.299"></a>
+<FONT color="green">300</FONT>          0xc67d65022b812b10L, 0x7196d11dd84478d6L, 0xaa630b1221a6d135L, <a name="line.300"></a>
+<FONT color="green">301</FONT>          0xe76c30ac71934161L, 0x3c99eaa38871e882L, 0x8b725ebc7bb4bb44L,<a name="line.301"></a>
+<FONT color="green">302</FONT>          0x508784b3825612a7L, 0x3f50ec8c65dcb52bL, 0xe4a536839c3e1cc8L,<a name="line.302"></a>
+<FONT color="green">303</FONT>          0x534e829c6ffb4f0eL, 0x88bb58939619e6edL, 0x8ce052e3a0ee0016L, <a name="line.303"></a>
+<FONT color="green">304</FONT>          0x571588ec590ca9f5L, 0xe0fe3cf3aac9fa33L, 0x3b0be6fc532b53d0L, <a name="line.304"></a>
+<FONT color="green">305</FONT>          0x54dc8ec3b4a1f45cL, 0x8f2954cc4d435dbfL, 0x38c2e0d3be860e79L,<a name="line.305"></a>
+<FONT color="green">306</FONT>          0xe3373adc4764a79aL, 0x3074f433d369c38fL, 0xeb812e3c2a8b6a6cL,<a name="line.306"></a>
+<FONT color="green">307</FONT>          0x5c6a9a23d94e39aaL, 0x879f402c20ac9049L, 0xe8482813c72637c5L, <a name="line.307"></a>
+<FONT color="green">308</FONT>          0x33bdf21c3ec49e26L, 0x84564603cd01cde0L, 0x5fa39c0c34e36403L, <a name="line.308"></a>
+<FONT color="green">309</FONT>          0x5bf8967c021482f8L, 0x800d4c73fbf62b1bL, 0x37e6f86c083378ddL,<a name="line.309"></a>
+<FONT color="green">310</FONT>          0xec132263f1d1d13eL, 0x83c44a5c165b76b2L, 0x58319053efb9df51L,<a name="line.310"></a>
+<FONT color="green">311</FONT>          0xefda244c1c7c8c97L, 0x342ffe43e59e2574L, 0x92a8639ccd84ed5eL, <a name="line.311"></a>
+<FONT color="green">312</FONT>          0x495db993346644bdL, 0xfeb60d8cc7a3177bL, 0x2543d7833e41be98L, <a name="line.312"></a>
+<FONT color="green">313</FONT>          0x4a94bfbcd9cb1914L, 0x916165b32029b0f7L, 0x268ad1acd3ece331L,<a name="line.313"></a>
+<FONT color="green">314</FONT>          0xfd7f0ba32a0e4ad2L, 0xf92401d31cf9ac29L, 0x22d1dbdce51b05caL,<a name="line.314"></a>
+<FONT color="green">315</FONT>          0x953a6fc316de560cL, 0x4ecfb5ccef3cffefL, 0x2118ddf308b65863L, <a name="line.315"></a>
+<FONT color="green">316</FONT>          0xfaed07fcf154f180L, 0x4d06b3e30291a246L, 0x96f369ecfb730ba5L, <a name="line.316"></a>
+<FONT color="green">317</FONT>          0x45b0a7036f7e6fb0L, 0x9e457d0c969cc653L, 0x29aec91365599595L,<a name="line.317"></a>
+<FONT color="green">318</FONT>          0xf25b131c9cbb3c76L, 0x9d8c7b237b319bfaL, 0x4679a12c82d33219L,<a name="line.318"></a>
+<FONT color="green">319</FONT>          0xf1921533711661dfL, 0x2a67cf3c88f4c83cL, 0x2e3cc54cbe032ec7L, <a name="line.319"></a>
+<FONT color="green">320</FONT>          0xf5c91f4347e18724L, 0x4222ab5cb424d4e2L, 0x99d771534dc67d01L, <a name="line.320"></a>
+<FONT color="green">321</FONT>          0xf600196caa4cda8dL, 0x2df5c36353ae736eL, 0x9a1e777ca06b20a8L, <a name="line.321"></a>
+<FONT color="green">322</FONT>          0x41ebad735989894bL };<a name="line.322"></a>
+<FONT color="green">323</FONT>    <a name="line.323"></a>
+<FONT color="green">324</FONT>    <a name="line.324"></a>
+<FONT color="green">325</FONT>      /**<a name="line.325"></a>
+<FONT color="green">326</FONT>       * Internal table used by CRC code.<a name="line.326"></a>
+<FONT color="green">327</FONT>       */<a name="line.327"></a>
+<FONT color="green">328</FONT>    <a name="line.328"></a>
+<FONT color="green">329</FONT>      // This table is made from the 33bit number 0x1e4725ca3, considered<a name="line.329"></a>
+<FONT color="green">330</FONT>      // as a prime polynomial of degree 32.<a name="line.330"></a>
+<FONT color="green">331</FONT>      private static final int[] hash32tab0 = new int[]<a name="line.331"></a>
+<FONT color="green">332</FONT>        { 0x00000000, 0xe4725ca3, 0x2c96e5e5, 0xc8e4b946, 0x592dcbca,<a name="line.332"></a>
+<FONT color="green">333</FONT>          0xbd5f9769, 0x75bb2e2f, 0x91c9728c, 0xb25b9794, 0x5629cb37,<a name="line.333"></a>
+<FONT color="green">334</FONT>          0x9ecd7271, 0x7abf2ed2, 0xeb765c5e, 0x0f0400fd, 0xc7e0b9bb,<a name="line.334"></a>
+<FONT color="green">335</FONT>          0x2392e518, 0x80c5738b, 0x64b72f28, 0xac53966e, 0x4821cacd,<a name="line.335"></a>
+<FONT color="green">336</FONT>          0xd9e8b841, 0x3d9ae4e2, 0xf57e5da4, 0x110c0107, 0x329ee41f,<a name="line.336"></a>
+<FONT color="green">337</FONT>          0xd6ecb8bc, 0x1e0801fa, 0xfa7a5d59, 0x6bb32fd5, 0x8fc17376,<a name="line.337"></a>
+<FONT color="green">338</FONT>          0x4725ca30, 0xa3579693, 0xe5f8bbb5, 0x018ae716, 0xc96e5e50,<a name="line.338"></a>
+<FONT color="green">339</FONT>          0x2d1c02f3, 0xbcd5707f, 0x58a72cdc, 0x9043959a, 0x7431c939,<a name="line.339"></a>
+<FONT color="green">340</FONT>          0x57a32c21, 0xb3d17082, 0x7b35c9c4, 0x9f479567, 0x0e8ee7eb,<a name="line.340"></a>
+<FONT color="green">341</FONT>          0xeafcbb48, 0x2218020e, 0xc66a5ead, 0x653dc83e, 0x814f949d,<a name="line.341"></a>
+<FONT color="green">342</FONT>          0x49ab2ddb, 0xadd97178, 0x3c1003f4, 0xd8625f57, 0x1086e611,<a name="line.342"></a>
+<FONT color="green">343</FONT>          0xf4f4bab2, 0xd7665faa, 0x33140309, 0xfbf0ba4f, 0x1f82e6ec,<a name="line.343"></a>
+<FONT color="green">344</FONT>          0x8e4b9460, 0x6a39c8c3, 0xa2dd7185, 0x46af2d26, 0x2f832bc9,<a name="line.344"></a>
+<FONT color="green">345</FONT>          0xcbf1776a, 0x0315ce2c, 0xe767928f, 0x76aee003, 0x92dcbca0,<a name="line.345"></a>
+<FONT color="green">346</FONT>          0x5a3805e6, 0xbe4a5945, 0x9dd8bc5d, 0x79aae0fe, 0xb14e59b8,<a name="line.346"></a>
+<FONT color="green">347</FONT>          0x553c051b, 0xc4f57797, 0x20872b34, 0xe8639272, 0x0c11ced1,<a name="line.347"></a>
+<FONT color="green">348</FONT>          0xaf465842, 0x4b3404e1, 0x83d0bda7, 0x67a2e104, 0xf66b9388,<a name="line.348"></a>
+<FONT color="green">349</FONT>          0x1219cf2b, 0xdafd766d, 0x3e8f2ace, 0x1d1dcfd6, 0xf96f9375,<a name="line.349"></a>
+<FONT color="green">350</FONT>          0x318b2a33, 0xd5f97690, 0x4430041c, 0xa04258bf, 0x68a6e1f9,<a name="line.350"></a>
+<FONT color="green">351</FONT>          0x8cd4bd5a, 0xca7b907c, 0x2e09ccdf, 0xe6ed7599, 0x029f293a,<a name="line.351"></a>
+<FONT color="green">352</FONT>          0x93565bb6, 0x77240715, 0xbfc0be53, 0x5bb2e2f0, 0x782007e8,<a name="line.352"></a>
+<FONT color="green">353</FONT>          0x9c525b4b, 0x54b6e20d, 0xb0c4beae, 0x210dcc22, 0xc57f9081,<a name="line.353"></a>
+<FONT color="green">354</FONT>          0x0d9b29c7, 0xe9e97564, 0x4abee3f7, 0xaeccbf54, 0x66280612,<a name="line.354"></a>
+<FONT color="green">355</FONT>          0x825a5ab1, 0x1393283d, 0xf7e1749e, 0x3f05cdd8, 0xdb77917b,<a name="line.355"></a>
+<FONT color="green">356</FONT>          0xf8e57463, 0x1c9728c0, 0xd4739186, 0x3001cd25, 0xa1c8bfa9,<a name="line.356"></a>
+<FONT color="green">357</FONT>          0x45bae30a, 0x8d5e5a4c, 0x692c06ef, 0x5f065792, 0xbb740b31,<a name="line.357"></a>
+<FONT color="green">358</FONT>          0x7390b277, 0x97e2eed4, 0x062b9c58, 0xe259c0fb, 0x2abd79bd,<a name="line.358"></a>
+<FONT color="green">359</FONT>          0xcecf251e, 0xed5dc006, 0x092f9ca5, 0xc1cb25e3, 0x25b97940,<a name="line.359"></a>
+<FONT color="green">360</FONT>          0xb4700bcc, 0x5002576f, 0x98e6ee29, 0x7c94b28a, 0xdfc32419,<a name="line.360"></a>
+<FONT color="green">361</FONT>          0x3bb178ba, 0xf355c1fc, 0x17279d5f, 0x86eeefd3, 0x629cb370,<a name="line.361"></a>
+<FONT color="green">362</FONT>          0xaa780a36, 0x4e0a5695, 0x6d98b38d, 0x89eaef2e, 0x410e5668,<a name="line.362"></a>
+<FONT color="green">363</FONT>          0xa57c0acb, 0x34b57847, 0xd0c724e4, 0x18239da2, 0xfc51c101,<a name="line.363"></a>
+<FONT color="green">364</FONT>          0xbafeec27, 0x5e8cb084, 0x966809c2, 0x721a5561, 0xe3d327ed,<a name="line.364"></a>
+<FONT color="green">365</FONT>          0x07a17b4e, 0xcf45c208, 0x2b379eab, 0x08a57bb3, 0xecd72710,<a name="line.365"></a>
+<FONT color="green">366</FONT>          0x24339e56, 0xc041c2f5, 0x5188b079, 0xb5faecda, 0x7d1e559c,<a name="line.366"></a>
+<FONT color="green">367</FONT>          0x996c093f, 0x3a3b9fac, 0xde49c30f, 0x16ad7a49, 0xf2df26ea,<a name="line.367"></a>
+<FONT color="green">368</FONT>          0x63165466, 0x876408c5, 0x4f80b183, 0xabf2ed20, 0x88600838,<a name="line.368"></a>
+<FONT color="green">369</FONT>          0x6c12549b, 0xa4f6eddd, 0x4084b17e, 0xd14dc3f2, 0x353f9f51,<a name="line.369"></a>
+<FONT color="green">370</FONT>          0xfddb2617, 0x19a97ab4, 0x70857c5b, 0x94f720f8, 0x5c1399be,<a name="line.370"></a>
+<FONT color="green">371</FONT>          0xb861c51d, 0x29a8b791, 0xcddaeb32, 0x053e5274, 0xe14c0ed7,<a name="line.371"></a>
+<FONT color="green">372</FONT>          0xc2deebcf, 0x26acb76c, 0xee480e2a, 0x0a3a5289, 0x9bf32005,<a name="line.372"></a>
+<FONT color="green">373</FONT>          0x7f817ca6, 0xb765c5e0, 0x53179943, 0xf0400fd0, 0x14325373,<a name="line.373"></a>
+<FONT color="green">374</FONT>          0xdcd6ea35, 0x38a4b696, 0xa96dc41a, 0x4d1f98b9, 0x85fb21ff,<a name="line.374"></a>
+<FONT color="green">375</FONT>          0x61897d5c, 0x421b9844, 0xa669c4e7, 0x6e8d7da1, 0x8aff2102,<a name="line.375"></a>
+<FONT color="green">376</FONT>          0x1b36538e, 0xff440f2d, 0x37a0b66b, 0xd3d2eac8, 0x957dc7ee,<a name="line.376"></a>
+<FONT color="green">377</FONT>          0x710f9b4d, 0xb9eb220b, 0x5d997ea8, 0xcc500c24, 0x28225087,<a name="line.377"></a>
+<FONT color="green">378</FONT>          0xe0c6e9c1, 0x04b4b562, 0x2726507a, 0xc3540cd9, 0x0bb0b59f,<a name="line.378"></a>
+<FONT color="green">379</FONT>          0xefc2e93c, 0x7e0b9bb0, 0x9a79c713, 0x529d7e55, 0xb6ef22f6,<a name="line.379"></a>
+<FONT color="green">380</FONT>          0x15b8b465, 0xf1cae8c6, 0x392e5180, 0xdd5c0d23, 0x4c957faf,<a name="line.380"></a>
+<FONT color="green">381</FONT>          0xa8e7230c, 0x60039a4a, 0x8471c6e9, 0xa7e323f1, 0x43917f52,<a name="line.381"></a>
+<FONT color="green">382</FONT>          0x8b75c614, 0x6f079ab7, 0xfecee83b, 0x1abcb498, 0xd2580dde,<a name="line.382"></a>
+<FONT color="green">383</FONT>          0x362a517d };<a name="line.383"></a>
+<FONT color="green">384</FONT>    <a name="line.384"></a>
+<FONT color="green">385</FONT>    <a name="line.385"></a>
+<FONT color="green">386</FONT>      /**<a name="line.386"></a>
+<FONT color="green">387</FONT>       * Incremental 32-bit CRC calculation for a single byte.<a name="line.387"></a>
+<FONT color="green">388</FONT>       *<a name="line.388"></a>
+<FONT color="green">389</FONT>       * &lt;p&gt;<a name="line.389"></a>
+<FONT color="green">390</FONT>       *<a name="line.390"></a>
+<FONT color="green">391</FONT>       * @param      b   The next data in the CRC calculation (only lowest byte is used).<a name="line.391"></a>
+<FONT color="green">392</FONT>       * @param      hcode   The current int result.<a name="line.392"></a>
+<FONT color="green">393</FONT>       * @return     Updated int value of CRC calculation.<a name="line.393"></a>
+<FONT color="green">394</FONT>       */<a name="line.394"></a>
+<FONT color="green">395</FONT>      private static final int update32l(long b, int hcode, int[] tbl) {<a name="line.395"></a>
+<FONT color="green">396</FONT>        return ( hcode &lt;&lt; 8 ) ^ tbl[(int)((b ^ ( hcode &gt;&gt;&gt; 24 )) &amp; 0xffL)];<a name="line.396"></a>
+<FONT color="green">397</FONT>      }<a name="line.397"></a>
+<FONT color="green">398</FONT>    <a name="line.398"></a>
+<FONT color="green">399</FONT>      /**<a name="line.399"></a>
+<FONT color="green">400</FONT>       * Incremental 32-bit CRC calculation for a single byte.<a name="line.400"></a>
+<FONT color="green">401</FONT>       *<a name="line.401"></a>
+<FONT color="green">402</FONT>       * &lt;p&gt;<a name="line.402"></a>
+<FONT color="green">403</FONT>       *<a name="line.403"></a>
+<FONT color="green">404</FONT>       * @param      b   The next data in the CRC calculation.<a name="line.404"></a>
+<FONT color="green">405</FONT>       * @param      hcode   The current long result.<a name="line.405"></a>
+<FONT color="green">406</FONT>       * @return     Updated int value of CRC calculation.<a name="line.406"></a>
+<FONT color="green">407</FONT>       */<a name="line.407"></a>
+<FONT color="green">408</FONT>      private static final int update32(byte b, int hcode, int[] tbl) {<a name="line.408"></a>
+<FONT color="green">409</FONT>        hcode = update32l(b, hcode, tbl);<a name="line.409"></a>
+<FONT color="green">410</FONT>        return hcode;<a name="line.410"></a>
+<FONT color="green">411</FONT>      }<a name="line.411"></a>
+<FONT color="green">412</FONT>    <a name="line.412"></a>
+<FONT color="green">413</FONT>      /**<a name="line.413"></a>
+<FONT color="green">414</FONT>       * Incremental 32-bit CRC calculation for a single short.<a name="line.414"></a>
+<FONT color="green">415</FONT>       *<a name="line.415"></a>
+<FONT color="green">416</FONT>       * &lt;p&gt;<a name="line.416"></a>
+<FONT color="green">417</FONT>       *<a name="line.417"></a>
+<FONT color="green">418</FONT>       * @param      s   The next data in the CRC calculation.<a name="line.418"></a>
+<FONT color="green">419</FONT>       * @param      hcode   The current long result.<a name="line.419"></a>
+<FONT color="green">420</FONT>       * @return     Updated int value of CRC calculation.<a name="line.420"></a>
+<FONT color="green">421</FONT>       */<a name="line.421"></a>
+<FONT color="green">422</FONT>      private static final int update32(short s, int hcode, int[] tbl) {<a name="line.422"></a>
+<FONT color="green">423</FONT>        hcode = update32l(s, hcode, tbl);<a name="line.423"></a>
+<FONT color="green">424</FONT>        hcode = update32l((s &gt;&gt;&gt; 8), hcode, tbl);<a name="line.424"></a>
+<FONT color="green">425</FONT>        return hcode;<a name="line.425"></a>
+<FONT color="green">426</FONT>      }<a name="line.426"></a>
+<FONT color="green">427</FONT>    <a name="line.427"></a>
+<FONT color="green">428</FONT>      /**<a name="line.428"></a>
+<FONT color="green">429</FONT>       * Incremental 32-bit CRC calculation for a single int.<a name="line.429"></a>
+<FONT color="green">430</FONT>       *<a name="line.430"></a>
+<FONT color="green">431</FONT>       * &lt;p&gt;<a name="line.431"></a>
+<FONT color="green">432</FONT>       *<a name="line.432"></a>
+<FONT color="green">433</FONT>       * @param      i   The next data in the CRC calculation.<a name="line.433"></a>
+<FONT color="green">434</FONT>       * @param      hcode   The current long result.<a name="line.434"></a>
+<FONT color="green">435</FONT>       * @return     Updated int value of CRC calculation.<a name="line.435"></a>
+<FONT color="green">436</FONT>       */<a name="line.436"></a>
+<FONT color="green">437</FONT>      private static final int update32(int i, int hcode, int[] tbl) {<a name="line.437"></a>
+<FONT color="green">438</FONT>        hcode = update32l(i, hcode, tbl);<a name="line.438"></a>
+<FONT color="green">439</FONT>        hcode = update32l((i &gt;&gt;&gt; 8), hcode, tbl);<a name="line.439"></a>
+<FONT color="green">440</FONT>        hcode = update32l((i &gt;&gt;&gt; 16), hcode, tbl);<a name="line.440"></a>
+<FONT color="green">441</FONT>        hcode = update32l((i &gt;&gt;&gt; 24), hcode, tbl);<a name="line.441"></a>
+<FONT color="green">442</FONT>        return hcode;<a name="line.442"></a>
+<FONT color="green">443</FONT>      }<a name="line.443"></a>
+<FONT color="green">444</FONT>    <a name="line.444"></a>
+<FONT color="green">445</FONT>      /**<a name="line.445"></a>
+<FONT color="green">446</FONT>       * Incremental 32-bit CRC calculation for a single long.<a name="line.446"></a>
+<FONT color="green">447</FONT>       *<a name="line.447"></a>
+<FONT color="green">448</FONT>       * &lt;p&gt;<a name="line.448"></a>
+<FONT color="green">449</FONT>       *<a name="line.449"></a>
+<FONT color="green">450</FONT>       * @param      l   The next data in the CRC calculation.<a name="line.450"></a>
+<FONT color="green">451</FONT>       * @param      hcode   The current long result.<a name="line.451"></a>
+<FONT color="green">452</FONT>       * @return     Updated int value of CRC calculation.<a name="line.452"></a>
+<FONT color="green">453</FONT>       */<a name="line.453"></a>
+<FONT color="green">454</FONT>      private static final int update32(long l, int hcode, int[] tbl) {<a name="line.454"></a>
+<FONT color="green">455</FONT>        hcode = update32l(l, hcode, tbl);<a name="line.455"></a>
+<FONT color="green">456</FONT>        hcode = update32l((l &gt;&gt;&gt; 8), hcode, tbl);<a name="line.456"></a>
+<FONT color="green">457</FONT>        hcode = update32l((l &gt;&gt;&gt; 16), hcode, tbl);<a name="line.457"></a>
+<FONT color="green">458</FONT>        hcode = update32l((l &gt;&gt;&gt; 24), hcode, tbl);<a name="line.458"></a>
+<FONT color="green">459</FONT>        hcode = update32l((l &gt;&gt;&gt; 32), hcode, tbl);<a name="line.459"></a>
+<FONT color="green">460</FONT>        hcode = update32l((l &gt;&gt;&gt; 40), hcode, tbl);<a name="line.460"></a>
+<FONT color="green">461</FONT>        hcode = update32l((l &gt;&gt;&gt; 48), hcode, tbl);<a name="line.461"></a>
+<FONT color="green">462</FONT>        hcode = update32l((l &gt;&gt;&gt; 56), hcode, tbl);<a name="line.462"></a>
+<FONT color="green">463</FONT>        return hcode;<a name="line.463"></a>
+<FONT color="green">464</FONT>      }<a name="line.464"></a>
+<FONT color="green">465</FONT>    <a name="line.465"></a>
+<FONT color="green">466</FONT>    <a name="line.466"></a>
+<FONT color="green">467</FONT>      /**<a name="line.467"></a>
+<FONT color="green">468</FONT>       * Incremental 64-bit CRC calculation for a single byte.<a name="line.468"></a>
+<FONT color="green">469</FONT>       *<a name="line.469"></a>
+<FONT color="green">470</FONT>       * &lt;p&gt;<a name="line.470"></a>
+<FONT color="green">471</FONT>       *<a name="line.471"></a>
+<FONT color="green">472</FONT>       * @param      b   The next data in the CRC calculation (only lowest byte is used).<a name="line.472"></a>
+<FONT color="green">473</FONT>       * @param      hcode   The current long result.<a name="line.473"></a>
+<FONT color="green">474</FONT>       * @return     Updated long value of CRC calculation.<a name="line.474"></a>
+<FONT color="green">475</FONT>       */<a name="line.475"></a>
+<FONT color="green">476</FONT>      private static final long update64l(long b, long hcode, long[] tbl) {<a name="line.476"></a>
+<FONT color="green">477</FONT>        return ( hcode &lt;&lt; 8 ) ^ tbl[(int)((b ^ ( hcode &gt;&gt;&gt; 56 )) &amp; 0xffL)];<a name="line.477"></a>
+<FONT color="green">478</FONT>      }<a name="line.478"></a>
+<FONT color="green">479</FONT>    <a name="line.479"></a>
+<FONT color="green">480</FONT>      /**<a name="line.480"></a>
+<FONT color="green">481</FONT>       * Incremental 64-bit CRC calculation for a single byte.<a name="line.481"></a>
+<FONT color="green">482</FONT>       *<a name="line.482"></a>
+<FONT color="green">483</FONT>       * &lt;p&gt;<a name="line.483"></a>
+<FONT color="green">484</FONT>       *<a name="line.484"></a>
+<FONT color="green">485</FONT>       * @param      b   The next data in the CRC calculation.<a name="line.485"></a>
+<FONT color="green">486</FONT>       * @param      hcode   The current long result.<a name="line.486"></a>
+<FONT color="green">487</FONT>       * @return     Updated long value of CRC calculation.<a name="line.487"></a>
+<FONT color="green">488</FONT>       */<a name="line.488"></a>
+<FONT color="green">489</FONT>      private static final long update64(byte b, long hcode, long[] tbl) {<a name="line.489"></a>
+<FONT color="green">490</FONT>        hcode = update64l(b, hcode, tbl);<a name="line.490"></a>
+<FONT color="green">491</FONT>        return hcode;<a name="line.491"></a>
+<FONT color="green">492</FONT>      }<a name="line.492"></a>
+<FONT color="green">493</FONT>    <a name="line.493"></a>
+<FONT color="green">494</FONT>      /**<a name="line.494"></a>
+<FONT color="green">495</FONT>       * Incremental 64-bit CRC calculation for a single short.<a name="line.495"></a>
+<FONT color="green">496</FONT>       *<a name="line.496"></a>
+<FONT color="green">497</FONT>       * &lt;p&gt;<a name="line.497"></a>
+<FONT color="green">498</FONT>       *<a name="line.498"></a>
+<FONT color="green">499</FONT>       * @param      s   The next data in the CRC calculation.<a name="line.499"></a>
+<FONT color="green">500</FONT>       * @param      hcode   The current long result.<a name="line.500"></a>
+<FONT color="green">501</FONT>       * @return     Updated long value of CRC calculation.<a name="line.501"></a>
+<FONT color="green">502</FONT>       */<a name="line.502"></a>
+<FONT color="green">503</FONT>      private static final long update64(short s, long hcode, long[] tbl) {<a name="line.503"></a>
+<FONT color="green">504</FONT>        hcode = update64l(s, hcode, tbl);<a name="line.504"></a>
+<FONT color="green">505</FONT>        hcode = update64l((s &gt;&gt;&gt; 8), hcode, tbl);<a name="line.505"></a>
+<FONT color="green">506</FONT>        return hcode;<a name="line.506"></a>
+<FONT color="green">507</FONT>      }<a name="line.507"></a>
+<FONT color="green">508</FONT>    <a name="line.508"></a>
+<FONT color="green">509</FONT>      /**<a name="line.509"></a>
+<FONT color="green">510</FONT>       * Incremental 64-bit CRC calculation for a single int.<a name="line.510"></a>
+<FONT color="green">511</FONT>       *<a name="line.511"></a>
+<FONT color="green">512</FONT>       * &lt;p&gt;<a name="line.512"></a>
+<FONT color="green">513</FONT>       *<a name="line.513"></a>
+<FONT color="green">514</FONT>       * @param      i   The next data in the CRC calculation.<a name="line.514"></a>
+<FONT color="green">515</FONT>       * @param      hcode   The current long result.<a name="line.515"></a>
+<FONT color="green">516</FONT>       * @return     Updated long value of CRC calculation.<a name="line.516"></a>
+<FONT color="green">517</FONT>       */<a name="line.517"></a>
+<FONT color="green">518</FONT>      private static final long update64(int i, long hcode, long[] tbl) {<a name="line.518"></a>
+<FONT color="green">519</FONT>        hcode = update64l(i, hcode, tbl);<a name="line.519"></a>
+<FONT color="green">520</FONT>        hcode = update64l((i &gt;&gt;&gt; 8), hcode, tbl);<a name="line.520"></a>
+<FONT color="green">521</FONT>        hcode = update64l((i &gt;&gt;&gt; 16), hcode, tbl);<a name="line.521"></a>
+<FONT color="green">522</FONT>        hcode = update64l((i &gt;&gt;&gt; 24), hcode, tbl);<a name="line.522"></a>
+<FONT color="green">523</FONT>        return hcode;<a name="line.523"></a>
+<FONT color="green">524</FONT>      }<a name="line.524"></a>
+<FONT color="green">525</FONT>    <a name="line.525"></a>
+<FONT color="green">526</FONT>      /**<a name="line.526"></a>
+<FONT color="green">527</FONT>       * Incremental 64-bit CRC calculation for a single long.<a name="line.527"></a>
+<FONT color="green">528</FONT>       *<a name="line.528"></a>
+<FONT color="green">529</FONT>       * &lt;p&gt;<a name="line.529"></a>
+<FONT color="green">530</FONT>       *<a name="line.530"></a>
+<FONT color="green">531</FONT>       * @param      l   The next data in the CRC calculation.<a name="line.531"></a>
+<FONT color="green">532</FONT>       * @param      hcode   The current long result.<a name="line.532"></a>
+<FONT color="green">533</FONT>       * @return     Updated long value of CRC calculation.<a name="line.533"></a>
+<FONT color="green">534</FONT>       */<a name="line.534"></a>
+<FONT color="green">535</FONT>      private static final long update64(long l, long hcode, long[] tbl) {<a name="line.535"></a>
+<FONT color="green">536</FONT>        hcode = update64l(l, hcode, tbl);<a name="line.536"></a>
+<FONT color="green">537</FONT>        hcode = update64l((l &gt;&gt;&gt; 8), hcode, tbl);<a name="line.537"></a>
+<FONT color="green">538</FONT>        hcode = update64l((l &gt;&gt;&gt; 16), hcode, tbl);<a name="line.538"></a>
+<FONT color="green">539</FONT>        hcode = update64l((l &gt;&gt;&gt; 24), hcode, tbl);<a name="line.539"></a>
+<FONT color="green">540</FONT>        hcode = update64l((l &gt;&gt;&gt; 32), hcode, tbl);<a name="line.540"></a>
+<FONT color="green">541</FONT>        hcode = update64l((l &gt;&gt;&gt; 40), hcode, tbl);<a name="line.541"></a>
+<FONT color="green">542</FONT>        hcode = update64l((l &gt;&gt;&gt; 48), hcode, tbl);<a name="line.542"></a>
+<FONT color="green">543</FONT>        hcode = update64l((l &gt;&gt;&gt; 56), hcode, tbl);<a name="line.543"></a>
+<FONT color="green">544</FONT>        return hcode;<a name="line.544"></a>
+<FONT color="green">545</FONT>      }<a name="line.545"></a>
+<FONT color="green">546</FONT>    <a name="line.546"></a>
+<FONT color="green">547</FONT>      /**<a name="line.547"></a>
+<FONT color="green">548</FONT>       * Compute 64-bit CRC for an array of bytes.<a name="line.548"></a>
+<FONT color="green">549</FONT>       *<a name="line.549"></a>
+<FONT color="green">550</FONT>       * &lt;p&gt;<a name="line.550"></a>
+<FONT color="green">551</FONT>       *<a name="line.551"></a>
+<FONT color="green">552</FONT>       * @param      v   The byte array.<a name="line.552"></a>
+<FONT color="green">553</FONT>       * @return     Long containing CRC hash of array.<a name="line.553"></a>
+<FONT color="green">554</FONT>       */<a name="line.554"></a>
+<FONT color="green">555</FONT>      public static final long hash64(byte[] v) {<a name="line.555"></a>
+<FONT color="green">556</FONT>        long hcode = 0L;<a name="line.556"></a>
+<FONT color="green">557</FONT>        for(byte x : v) {<a name="line.557"></a>
+<FONT color="green">558</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.558"></a>
+<FONT color="green">559</FONT>        }<a name="line.559"></a>
+<FONT color="green">560</FONT>        return hcode;<a name="line.560"></a>
+<FONT color="green">561</FONT>      }<a name="line.561"></a>
+<FONT color="green">562</FONT>    <a name="line.562"></a>
+<FONT color="green">563</FONT>      /**<a name="line.563"></a>
+<FONT color="green">564</FONT>       * Compute 64-bit CRC for an array of shorts.<a name="line.564"></a>
+<FONT color="green">565</FONT>       *<a name="line.565"></a>
+<FONT color="green">566</FONT>       * &lt;p&gt;<a name="line.566"></a>
+<FONT color="green">567</FONT>       *<a name="line.567"></a>
+<FONT color="green">568</FONT>       * @param      v   The short array.<a name="line.568"></a>
+<FONT color="green">569</FONT>       * @return     Long containing CRC hash of array.<a name="line.569"></a>
+<FONT color="green">570</FONT>       */<a name="line.570"></a>
+<FONT color="green">571</FONT>      public static final long hash64(short[] v) {<a name="line.571"></a>
+<FONT color="green">572</FONT>        long hcode = 0L;<a name="line.572"></a>
+<FONT color="green">573</FONT>        for(short x : v) {<a name="line.573"></a>
+<FONT color="green">574</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.574"></a>
+<FONT color="green">575</FONT>        }<a name="line.575"></a>
+<FONT color="green">576</FONT>        return hcode;<a name="line.576"></a>
+<FONT color="green">577</FONT>      }<a name="line.577"></a>
+<FONT color="green">578</FONT>    <a name="line.578"></a>
+<FONT color="green">579</FONT>      /**<a name="line.579"></a>
+<FONT color="green">580</FONT>       * Incremental 64-bit CRC for an integer.<a name="line.580"></a>
+<FONT color="green">581</FONT>       *<a name="line.581"></a>
+<FONT color="green">582</FONT>       * &lt;p&gt;<a name="line.582"></a>
+<FONT color="green">583</FONT>       *<a name="line.583"></a>
+<FONT color="green">584</FONT>       * @param      x   The int.<a name="line.584"></a>
+<FONT color="green">585</FONT>       * @param      hcode   The hash so far.<a name="line.585"></a>
+<FONT color="green">586</FONT>       * @return     Long which is the updated hcode for x.<a name="line.586"></a>
+<FONT color="green">587</FONT>       */<a name="line.587"></a>
+<FONT color="green">588</FONT>      public static final long update_hash(int x, long hcode) {<a name="line.588"></a>
+<FONT color="green">589</FONT>        return update64(x, hcode, hash64tab1);<a name="line.589"></a>
+<FONT color="green">590</FONT>      }<a name="line.590"></a>
+<FONT color="green">591</FONT>    <a name="line.591"></a>
+<FONT color="green">592</FONT>      /**<a name="line.592"></a>
+<FONT color="green">593</FONT>       * Incremental 64-bit CRC for a long.<a name="line.593"></a>
+<FONT color="green">594</FONT>       *<a name="line.594"></a>
+<FONT color="green">595</FONT>       * &lt;p&gt;<a name="line.595"></a>
+<FONT color="green">596</FONT>       *<a name="line.596"></a>
+<FONT color="green">597</FONT>       * @param      x   The long.<a name="line.597"></a>
+<FONT color="green">598</FONT>       * @param      hcode   The hash so far.<a name="line.598"></a>
+<FONT color="green">599</FONT>       * @return     Long which is the updated hcode for x.<a name="line.599"></a>
+<FONT color="green">600</FONT>       */<a name="line.600"></a>
+<FONT color="green">601</FONT>      public static final long update_hash(long x, long hcode) {<a name="line.601"></a>
+<FONT color="green">602</FONT>        return update64(x, hcode, hash64tab1);<a name="line.602"></a>
+<FONT color="green">603</FONT>      }<a name="line.603"></a>
+<FONT color="green">604</FONT>    <a name="line.604"></a>
+<FONT color="green">605</FONT>      /**<a name="line.605"></a>
+<FONT color="green">606</FONT>       * Compute 64-bit CRC for an array of ints.<a name="line.606"></a>
+<FONT color="green">607</FONT>       *<a name="line.607"></a>
+<FONT color="green">608</FONT>       * &lt;p&gt;<a name="line.608"></a>
+<FONT color="green">609</FONT>       *<a name="line.609"></a>
+<FONT color="green">610</FONT>       * @param      v   The int array.<a name="line.610"></a>
+<FONT color="green">611</FONT>       * @return     Long containing CRC hash of array.<a name="line.611"></a>
+<FONT color="green">612</FONT>       */<a name="line.612"></a>
+<FONT color="green">613</FONT>      public static final long hash64(int[] v) {<a name="line.613"></a>
+<FONT color="green">614</FONT>        long hcode = 0L;<a name="line.614"></a>
+<FONT color="green">615</FONT>        for(int x : v) {<a name="line.615"></a>
+<FONT color="green">616</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.616"></a>
+<FONT color="green">617</FONT>        }<a name="line.617"></a>
+<FONT color="green">618</FONT>        return hcode;<a name="line.618"></a>
+<FONT color="green">619</FONT>      }<a name="line.619"></a>
+<FONT color="green">620</FONT>    <a name="line.620"></a>
+<FONT color="green">621</FONT>      /**<a name="line.621"></a>
+<FONT color="green">622</FONT>       * Compute 64-bit CRC for an array of float.<a name="line.622"></a>
+<FONT color="green">623</FONT>       *<a name="line.623"></a>
+<FONT color="green">624</FONT>       * &lt;p&gt;<a name="line.624"></a>
+<FONT color="green">625</FONT>       *<a name="line.625"></a>
+<FONT color="green">626</FONT>       * @param      v   The float array.<a name="line.626"></a>
+<FONT color="green">627</FONT>       * @return     CRC hash of array.<a name="line.627"></a>
+<FONT color="green">628</FONT>       */<a name="line.628"></a>
+<FONT color="green">629</FONT>      public static final long hash64(float[] v) {<a name="line.629"></a>
+<FONT color="green">630</FONT>        long hcode = 0L;<a name="line.630"></a>
+<FONT color="green">631</FONT>        for(float xf : v) {<a name="line.631"></a>
+<FONT color="green">632</FONT>          int x = Float.floatToRawIntBits(xf);<a name="line.632"></a>
+<FONT color="green">633</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.633"></a>
+<FONT color="green">634</FONT>        }<a name="line.634"></a>
+<FONT color="green">635</FONT>        return hcode;<a name="line.635"></a>
+<FONT color="green">636</FONT>      }<a name="line.636"></a>
+<FONT color="green">637</FONT>    <a name="line.637"></a>
+<FONT color="green">638</FONT>      /**<a name="line.638"></a>
+<FONT color="green">639</FONT>       * Compute 64-bit CRC for an array of longs.<a name="line.639"></a>
+<FONT color="green">640</FONT>       *<a name="line.640"></a>
+<FONT color="green">641</FONT>       * &lt;p&gt;<a name="line.641"></a>
+<FONT color="green">642</FONT>       *<a name="line.642"></a>
+<FONT color="green">643</FONT>       * @param      v   The long array.<a name="line.643"></a>
+<FONT color="green">644</FONT>       * @return     Long containing CRC hash of array.<a name="line.644"></a>
+<FONT color="green">645</FONT>       */<a name="line.645"></a>
+<FONT color="green">646</FONT>      public static final long hash64(long[] v) {<a name="line.646"></a>
+<FONT color="green">647</FONT>        long hcode = 0L;<a name="line.647"></a>
+<FONT color="green">648</FONT>        for(long x : v) {<a name="line.648"></a>
+<FONT color="green">649</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.649"></a>
+<FONT color="green">650</FONT>        }<a name="line.650"></a>
+<FONT color="green">651</FONT>        return hcode;<a name="line.651"></a>
+<FONT color="green">652</FONT>      }<a name="line.652"></a>
+<FONT color="green">653</FONT>    <a name="line.653"></a>
+<FONT color="green">654</FONT>      /**<a name="line.654"></a>
+<FONT color="green">655</FONT>       * Compute 64-bit CRC for an array of double.<a name="line.655"></a>
+<FONT color="green">656</FONT>       *<a name="line.656"></a>
+<FONT color="green">657</FONT>       * &lt;p&gt;<a name="line.657"></a>
+<FONT color="green">658</FONT>       *<a name="line.658"></a>
+<FONT color="green">659</FONT>       * @param      v   The double array.<a name="line.659"></a>
+<FONT color="green">660</FONT>       * @return     CRC hash of array.<a name="line.660"></a>
+<FONT color="green">661</FONT>       */<a name="line.661"></a>
+<FONT color="green">662</FONT>      public static final long hash64(double[] v) {<a name="line.662"></a>
+<FONT color="green">663</FONT>        long hcode = 0L;<a name="line.663"></a>
+<FONT color="green">664</FONT>        for(double xd : v) {<a name="line.664"></a>
+<FONT color="green">665</FONT>          long x = Double.doubleToRawLongBits(xd);<a name="line.665"></a>
+<FONT color="green">666</FONT>          hcode = update64(x, hcode, hash64tab1);<a name="line.666"></a>
+<FONT color="green">667</FONT>        }<a name="line.667"></a>
+<FONT color="green">668</FONT>        return hcode;<a name="line.668"></a>
+<FONT color="green">669</FONT>      }<a name="line.669"></a>
+<FONT color="green">670</FONT>    <a name="line.670"></a>
+<FONT color="green">671</FONT>      /**<a name="line.671"></a>
+<FONT color="green">672</FONT>       * Compute 32-bit CRC for an array of bytes.<a name="line.672"></a>
+<FONT color="green">673</FONT>       *<a name="line.673"></a>
+<FONT color="green">674</FONT>       * &lt;p&gt;<a name="line.674"></a>
+<FONT color="green">675</FONT>       *<a name="line.675"></a>
+<FONT color="green">676</FONT>       * @param      v   The byte array.<a name="line.676"></a>
+<FONT color="green">677</FONT>       * @return     Int containing CRC hash of array.<a name="line.677"></a>
+<FONT color="green">678</FONT>       */<a name="line.678"></a>
+<FONT color="green">679</FONT>      public static final int hash32(byte[] v) {<a name="line.679"></a>
+<FONT color="green">680</FONT>        int hcode = 0;<a name="line.680"></a>
+<FONT color="green">681</FONT>        for(byte x : v) {<a name="line.681"></a>
+<FONT color="green">682</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.682"></a>
+<FONT color="green">683</FONT>        }<a name="line.683"></a>
+<FONT color="green">684</FONT>        return hcode;<a name="line.684"></a>
+<FONT color="green">685</FONT>      }<a name="line.685"></a>
+<FONT color="green">686</FONT>    <a name="line.686"></a>
+<FONT color="green">687</FONT>      /**<a name="line.687"></a>
+<FONT color="green">688</FONT>       * Compute 32-bit CRC for an array of shorts.<a name="line.688"></a>
+<FONT color="green">689</FONT>       *<a name="line.689"></a>
+<FONT color="green">690</FONT>       * &lt;p&gt;<a name="line.690"></a>
+<FONT color="green">691</FONT>       *<a name="line.691"></a>
+<FONT color="green">692</FONT>       * @param      v   The short array.<a name="line.692"></a>
+<FONT color="green">693</FONT>       * @return     Int containing CRC hash of array.<a name="line.693"></a>
+<FONT color="green">694</FONT>       */<a name="line.694"></a>
+<FONT color="green">695</FONT>      public static final int hash32(short[] v) {<a name="line.695"></a>
+<FONT color="green">696</FONT>        int hcode = 0;<a name="line.696"></a>
+<FONT color="green">697</FONT>        for(short x : v) {<a name="line.697"></a>
+<FONT color="green">698</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.698"></a>
+<FONT color="green">699</FONT>        }<a name="line.699"></a>
+<FONT color="green">700</FONT>        return hcode;<a name="line.700"></a>
+<FONT color="green">701</FONT>      }<a name="line.701"></a>
+<FONT color="green">702</FONT>    <a name="line.702"></a>
+<FONT color="green">703</FONT>      /**<a name="line.703"></a>
+<FONT color="green">704</FONT>       * Compute 32-bit CRC for an array of ints.<a name="line.704"></a>
+<FONT color="green">705</FONT>       *<a name="line.705"></a>
+<FONT color="green">706</FONT>       * &lt;p&gt;<a name="line.706"></a>
+<FONT color="green">707</FONT>       *<a name="line.707"></a>
+<FONT color="green">708</FONT>       * @param      v   The int array.<a name="line.708"></a>
+<FONT color="green">709</FONT>       * @return     Int containing CRC hash of array.<a name="line.709"></a>
+<FONT color="green">710</FONT>       */<a name="line.710"></a>
+<FONT color="green">711</FONT>      public static final int hash32(int[] v) {<a name="line.711"></a>
+<FONT color="green">712</FONT>        int hcode = 0;<a name="line.712"></a>
+<FONT color="green">713</FONT>        for(int x : v) {<a name="line.713"></a>
+<FONT color="green">714</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.714"></a>
+<FONT color="green">715</FONT>        }<a name="line.715"></a>
+<FONT color="green">716</FONT>        return hcode;<a name="line.716"></a>
+<FONT color="green">717</FONT>      }<a name="line.717"></a>
+<FONT color="green">718</FONT>    <a name="line.718"></a>
+<FONT color="green">719</FONT>      /**<a name="line.719"></a>
+<FONT color="green">720</FONT>       * Compute 32-bit CRC for an array of float.<a name="line.720"></a>
+<FONT color="green">721</FONT>       *<a name="line.721"></a>
+<FONT color="green">722</FONT>       * &lt;p&gt;<a name="line.722"></a>
+<FONT color="green">723</FONT>       *<a name="line.723"></a>
+<FONT color="green">724</FONT>       * @param      v   The float array.<a name="line.724"></a>
+<FONT color="green">725</FONT>       * @return     CRC hash of array.<a name="line.725"></a>
+<FONT color="green">726</FONT>       */<a name="line.726"></a>
+<FONT color="green">727</FONT>      public static int hash32(float[] v) {<a name="line.727"></a>
+<FONT color="green">728</FONT>        int hcode = 0;<a name="line.728"></a>
+<FONT color="green">729</FONT>        for(float xf : v) {<a name="line.729"></a>
+<FONT color="green">730</FONT>          int x = Float.floatToRawIntBits(xf);<a name="line.730"></a>
+<FONT color="green">731</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.731"></a>
+<FONT color="green">732</FONT>        }<a name="line.732"></a>
+<FONT color="green">733</FONT>        return hcode;<a name="line.733"></a>
+<FONT color="green">734</FONT>      }<a name="line.734"></a>
+<FONT color="green">735</FONT>    <a name="line.735"></a>
+<FONT color="green">736</FONT>      /**<a name="line.736"></a>
+<FONT color="green">737</FONT>       * Compute 32-bit CRC for an array of longs.<a name="line.737"></a>
+<FONT color="green">738</FONT>       *<a name="line.738"></a>
+<FONT color="green">739</FONT>       * &lt;p&gt;<a name="line.739"></a>
+<FONT color="green">740</FONT>       *<a name="line.740"></a>
+<FONT color="green">741</FONT>       * @param      v   The long array.<a name="line.741"></a>
+<FONT color="green">742</FONT>       * @return     Int containing CRC hash of array.<a name="line.742"></a>
+<FONT color="green">743</FONT>       */<a name="line.743"></a>
+<FONT color="green">744</FONT>      public static final int hash32(long[] v) {<a name="line.744"></a>
+<FONT color="green">745</FONT>        int hcode = 0;<a name="line.745"></a>
+<FONT color="green">746</FONT>        for(long x : v) {<a name="line.746"></a>
+<FONT color="green">747</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.747"></a>
+<FONT color="green">748</FONT>        }<a name="line.748"></a>
+<FONT color="green">749</FONT>        return hcode;<a name="line.749"></a>
+<FONT color="green">750</FONT>      }<a name="line.750"></a>
+<FONT color="green">751</FONT>    <a name="line.751"></a>
+<FONT color="green">752</FONT>      /**<a name="line.752"></a>
+<FONT color="green">753</FONT>       * Compute 32-bit CRC for an array of double.<a name="line.753"></a>
+<FONT color="green">754</FONT>       *<a name="line.754"></a>
+<FONT color="green">755</FONT>       * &lt;p&gt;<a name="line.755"></a>
+<FONT color="green">756</FONT>       *<a name="line.756"></a>
+<FONT color="green">757</FONT>       * @param      v   The double array.<a name="line.757"></a>
+<FONT color="green">758</FONT>       * @return     Int containing CRC hash of array.<a name="line.758"></a>
+<FONT color="green">759</FONT>       */<a name="line.759"></a>
+<FONT color="green">760</FONT>      public static final int hash32(double[] v) {<a name="line.760"></a>
+<FONT color="green">761</FONT>        int hcode = 0;<a name="line.761"></a>
+<FONT color="green">762</FONT>        for(double xd : v) {<a name="line.762"></a>
+<FONT color="green">763</FONT>          long x = Double.doubleToRawLongBits(xd);<a name="line.763"></a>
+<FONT color="green">764</FONT>          hcode = update32(x, hcode, hash32tab0);<a name="line.764"></a>
+<FONT color="green">765</FONT>        }<a name="line.765"></a>
+<FONT color="green">766</FONT>        return hcode;<a name="line.766"></a>
+<FONT color="green">767</FONT>      }<a name="line.767"></a>
+<FONT color="green">768</FONT>    <a name="line.768"></a>
+<FONT color="green">769</FONT>      /**<a name="line.769"></a>
+<FONT color="green">770</FONT>       * Compute 32-bit CRC for a matrix of doubles. Used to compute a hash<a name="line.770"></a>
+<FONT color="green">771</FONT>       * value for instances of Matrix.<a name="line.771"></a>
+<FONT color="green">772</FONT>       *<a name="line.772"></a>
+<FONT color="green">773</FONT>       * &lt;p&gt;<a name="line.773"></a>
+<FONT color="green">774</FONT>       *<a name="line.774"></a>
+<FONT color="green">775</FONT>       * @param      A   The double[][].<a name="line.775"></a>
+<FONT color="green">776</FONT>       * @param      rows The length of A.<a name="line.776"></a>
+<FONT color="green">777</FONT>       * @param      cols The length of A[0].<a name="line.777"></a>
+<FONT color="green">778</FONT>       * @return     CRC hash of A.<a name="line.778"></a>
+<FONT color="green">779</FONT>       */<a name="line.779"></a>
+<FONT color="green">780</FONT>      public static final int hash32(double[][] A, int rows, int cols) {<a name="line.780"></a>
+<FONT color="green">781</FONT>        int hcode = 0;<a name="line.781"></a>
+<FONT color="green">782</FONT>        for (int i = 0; i &lt; rows; i++) {<a name="line.782"></a>
+<FONT color="green">783</FONT>          for (int j = 0; j &lt; cols; j++) {<a name="line.783"></a>
+<FONT color="green">784</FONT>            long x = Double.doubleToRawLongBits(A[i][j]);<a name="line.784"></a>
+<FONT color="green">785</FONT>            hcode = update32(x, hcode, hash32tab0);<a name="line.785"></a>
+<FONT color="green">786</FONT>          }<a name="line.786"></a>
+<FONT color="green">787</FONT>        }<a name="line.787"></a>
+<FONT color="green">788</FONT>        return hcode;<a name="line.788"></a>
+<FONT color="green">789</FONT>      }<a name="line.789"></a>
+<FONT color="green">790</FONT>    <a name="line.790"></a>
+<FONT color="green">791</FONT>      /**<a name="line.791"></a>
+<FONT color="green">792</FONT>       * Easily testable function which computes 64-bit CRC for a single long.<a name="line.792"></a>
+<FONT color="green">793</FONT>       *<a name="line.793"></a>
+<FONT color="green">794</FONT>       * &lt;p&gt; These functions are only intended as entry points for test<a name="line.794"></a>
+<FONT color="green">795</FONT>       * code. They are structurally the same as a some functions in a<a name="line.795"></a>
+<FONT color="green">796</FONT>       * long-used and well-tested C library, so we were easily able to<a name="line.796"></a>
+<FONT color="green">797</FONT>       * generate testcases for this code from the C code.  &lt;p&gt;<a name="line.797"></a>
+<FONT color="green">798</FONT>       *<a name="line.798"></a>
+<FONT color="green">799</FONT>       * @param      x   The long to be hashed.<a name="line.799"></a>
+<FONT color="green">800</FONT>       * @param      initial   The CRC value to be updated.<a name="line.800"></a>
+<FONT color="green">801</FONT>       * @return     Long containing CRC hash value.<a name="line.801"></a>
+<FONT color="green">802</FONT>       */<a name="line.802"></a>
+<FONT color="green">803</FONT>      public static final long hash64(long x, long initial) {<a name="line.803"></a>
+<FONT color="green">804</FONT>        long hcode = initial;<a name="line.804"></a>
+<FONT color="green">805</FONT>        hcode = update64(x, hcode, hash64tab1);<a name="line.805"></a>
+<FONT color="green">806</FONT>        return hcode;<a name="line.806"></a>
+<FONT color="green">807</FONT>      }<a name="line.807"></a>
+<FONT color="green">808</FONT>    <a name="line.808"></a>
+<FONT color="green">809</FONT>    <a name="line.809"></a>
+<FONT color="green">810</FONT>      /**<a name="line.810"></a>
+<FONT color="green">811</FONT>       * Easily testable function which computes 32-bit CRC for a single long.<a name="line.811"></a>
+<FONT color="green">812</FONT>       *<a name="line.812"></a>
+<FONT color="green">813</FONT>       *<a name="line.813"></a>
+<FONT color="green">814</FONT>       * &lt;p&gt; These functions are only intended as entry points for test<a name="line.814"></a>
+<FONT color="green">815</FONT>       * code. They are structurally the same as a some functions in a<a name="line.815"></a>
+<FONT color="green">816</FONT>       * long-used and well-tested C library, so we were easily able to<a name="line.816"></a>
+<FONT color="green">817</FONT>       * generate testcases for this code from the C code.  &lt;p&gt;<a name="line.817"></a>
+<FONT color="green">818</FONT>       *<a name="line.818"></a>
+<FONT color="green">819</FONT>       * @param      x   The long to be hashed.<a name="line.819"></a>
+<FONT color="green">820</FONT>       * @param      initial   The CRC value to be updated.<a name="line.820"></a>
+<FONT color="green">821</FONT>       * @return     Int containing CRC hash value.<a name="line.821"></a>
+<FONT color="green">822</FONT>       */<a name="line.822"></a>
+<FONT color="green">823</FONT>      public static final int hash32(long x, int initial) {<a name="line.823"></a>
+<FONT color="green">824</FONT>        int hcode = initial;<a name="line.824"></a>
+<FONT color="green">825</FONT>        hcode = update32(x, hcode, hash32tab0);<a name="line.825"></a>
+<FONT color="green">826</FONT>        return hcode;<a name="line.826"></a>
+<FONT color="green">827</FONT>      }<a name="line.827"></a>
+<FONT color="green">828</FONT>    }<a name="line.828"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>
